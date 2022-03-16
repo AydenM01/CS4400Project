@@ -42,7 +42,7 @@ CREATE TABLE Person (
 ) engine = innodb;
 
 CREATE TABLE Users (
-	ssn char(11) primary key, -- this must be 11 for xxx-xx-xxxx
+	ssn char(11), -- this must be 11 for xxx-xx-xxxx
     fname varchar(255),
     lname varchar(255),
     joinedDate date,
@@ -150,44 +150,65 @@ CREATE TABLE CustomerOwnsAccounts (
     on update cascade on delete cascade,
     foreign key (customerID) references Customer (userID)
     on update cascade on delete cascade
-);
+) engine = innodb;
 
-/*
+
 CREATE TABLE Savings (
-	ibAccountID,
-    ibBankID,
-    minBalance
+	ibAccountID varchar(255) NOT NULL,
+    ibBankID varchar(255) NOT NULL,
+    minBalance decimal(14, 2),
+    
+    primary key (ibAccountID, ibBankID),
+    foreign key (ibAccountID, ibBankID) references InterestBearing (accountID, bankID)
+    on update cascade on delete cascade -- if Account is deleted Savings is deleted
 ) engine = innodb;
 
 CREATE TABLE Checking (
-	accountID,
-    bankID,
-	lastOverdraftDate,
-	lastOverdraftAmount,
-    overdraftSavings
+	accountID varchar(255) NOT NULL,
+    bankID varchar(255) NOT NULL,
+	
+    primary key (accountID, bankID),
+    foreign key (accountID, bankID) references Accounts(id, bankID)
+    on update cascade on delete cascade -- if Account is deleted Checking is deleted
 ) engine = innodb;
 
 CREATE TABLE Market (
-	ibAccountID,
-    ibBankID,
-    maxWithdrawalLimit,
-    totalWithdrawals
+	ibAccountID varchar(255) NOT NULL,
+    ibBankID varchar(255) NOT NULL,
+    maxWithdrawalLimit decimal(14, 2),
+    totalWithdrawals int,
+    
+    primary key (ibAccountID, ibBankID),
+    foreign key (ibAccountID, ibBankID) references InterestBearing(accountID, bankID)
+    on update cascade on delete cascade -- if Account is deleted Market is deleted
 ) engine = innodb;
 
 CREATE TABLE OverDraftProtectionPolicy (
-	checkingAccountID,
-    checkingBankID,
-    savingsIbAccountID,
-    savingsIbBankID,
-    _date,
-    amount
+	checkingAccountID varchar(255) NOT NULL,
+    checkingBankID varchar(255) NOT NULL,
+    savingsIbAccountID varchar(255) NOT NULL,
+    savingsIbBankID varchar(255) NOT NULL,
+    _date date,
+    amount decimal(14,2),
+    
+    primary key (checkingAccountID, checkingBankID, savingsIbAccountID, savingsIbBankID),
+    foreign key (checkingAccountID, checkingBankID) references Checking(accountID, bankID)
+    on update cascade on delete cascade,
+    foreign key (savingsIbAccountID, savingsIbBankID) references Savings(ibAccountID, ibBankID)
+    on update cascade on delete cascade -- if Account is deleted OverDraftProtectionPolicy is deleted
 ) engine = innodb;
 
 CREATE TABLE EmployeeWorksForBank (
-	employeeID,
-    bankID
+	employeeID varchar(255) NOT NULL,
+    bankID varchar(255) NOT NULL,
+    
+    primary key (employeerID, BankID),
+    foreign key (employeeID) references Employee(userID)
+    on update cascade on delete cascade,
+    foreign key (bankID) references Bank(id)
+    on update cascade on delete cascade
 ) engine = innodb;
- */
+ 
 -- Unaddressed constraints:
 -- Right now we are not addressing that a Checking and Interest-Bearing account should not point to the same Account
 -- Similar to above we are not addressing that a Savings and Market account should not point to an Interest-Bearing account
