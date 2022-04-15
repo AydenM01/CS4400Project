@@ -18,12 +18,15 @@ import {
 export async function getServerSideProps() {
   const corpIDs = await fetch(url + `/api/getCorpIDs`);
   const corpIDsJSON = await corpIDs.json();
-  const employeeIDs = await fetch(url + `/api/getEmployeeIDs`);
+  const employeeIDs = await fetch(url + `/api/getPossibleEmployeeIDs`);
   const employeeIDsJSON = await employeeIDs.json();
-  const managerIDs = await fetch(url + `/api/getManagerIDs`);
+  const managerIDs = await fetch(url + `/api/getPossibleManagerIDs`);
   const managerIDsJSON = await managerIDs.json();
   
-  let managerInit = managerIDsJSON[0]['manager']
+  let managerInit = "";
+  if (managerIDsJSON.length > 0) {
+    managerInit = managerIDsJSON[0]['perID']
+  }
   let corpIDInit = corpIDsJSON[0]['corpID']
   let employeeInit = employeeIDsJSON[0]['perID']
 
@@ -42,6 +45,19 @@ export default function createBank(props) {
     const [corpID, setCorpID] = useState(props.corpIDInit)
     const [employee, setEmployee] = useState(props.employeeInit)
     const [manager, setManager] = useState(props.managerInit)
+
+    const handleCreate = async () => {
+        const rawResponse = await fetch(url + "/api/createBank", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ bankID: bankID, name: name, street: street, city: city, state: state, zip: zip, resAssets: resAssets, corpID: corpID, employee: employee, manager: manager}),
+          });
+          const response = await rawResponse.json();
+          console.log(response);
+      }
 
   return (
     <div className={styles.container}>
@@ -85,7 +101,7 @@ export default function createBank(props) {
           <TextField label="State Abbr." fullWidth value={state} onChange={(e) => setState(e.target.value)}/>
         </Grid>
         <Grid item xs={4}>
-          <TextField type="number" label="Zip Code" fullWidth value={zip} onChange={(e) => setZip(e.target.value)}/>
+          <TextField label="Zip Code" fullWidth value={zip} onChange={(e) => setZip(e.target.value)}/>
         </Grid>
         <Grid item xs={2} />
 
@@ -130,7 +146,7 @@ export default function createBank(props) {
             <InputLabel>Manager</InputLabel>
             <Select label="Manager" value={manager} onChange={(e) => setManager(e.target.value)}>
             {props.managerIDsJSON.map((obj, i) => {
-                let manager = obj["manager"];
+                let manager = obj["perID"];
                 return <MenuItem key={i} value={manager}>{manager}</MenuItem>;
               })}
             </Select>
@@ -147,7 +163,7 @@ export default function createBank(props) {
           </Button>
         </Grid>
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
+          <Button variant="contained" fullWidth onClick={handleCreate}>
             {" "}
             Create{" "}
           </Button>

@@ -32,7 +32,7 @@ create procedure create_bank (in ip_bankID varchar(100), in ip_bankName varchar(
 sp_main: begin
 	-- if ip_employee or ip_manager are not employees or ip_manager already works for a bank, not valid
     -- if corpID does not exist, not valid
-	if (ip_employee not in (select perID from employee)
+	if (ip_bank_employee not in (select perID from employee)
 		or ip_manager not in (select perID from employee)
         or ip_corpID not in (select corpID from corporation)
         or ip_manager in (select distinct perID from workFor))

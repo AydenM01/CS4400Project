@@ -11,6 +11,19 @@ export default function createCorporation() {
   const [shortName, setShortName] = useState("");
   const [resAssets, setResAssets] = useState(0);
 
+  const handleCreate = async () => {
+    const rawResponse = await fetch(url + "/api/createCorporation", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ corpID: corpID, longName: longName, shortName: shortName, resAssets: resAssets }),
+      });
+      const response = await rawResponse.json();
+      console.log(response);
+  }
+
   return (
     <div className={styles.container}>
       <Head>
@@ -50,7 +63,7 @@ export default function createCorporation() {
         <Button variant="contained" fullWidth> Cancel </Button>
         </Grid>
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth> Create </Button>
+          <Button variant="contained" fullWidth onClick={handleCreate}> Create </Button>
         </Grid>
         <Grid item xs={2} />
       </Grid>
