@@ -7,9 +7,9 @@ export default function handler(req, res) {
   let resAssets = null;
 
   if (req.method === 'POST') {
-    corpID = req.body.corpID;
-    longName = req.body.longName;
-    shortName = req.body.shortName;
+    req.body.corpID? corpID = req.body.corpID: corpID = null;
+    req.body.longName? longName = req.body.longName: longName = null;
+    req.body.shortName? shortName = req.body.shortName: shortName = null;
     resAssets = req.body.resAssets;
   }
 

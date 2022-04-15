@@ -13,16 +13,16 @@ export default function handler(req, res) {
     let manager = null;
 
   if (req.method === 'POST') {
-     bankID = req.body.bankID;
-     name = req.body.name;
-     street = req.body.street;
-     city = req.body.city;
-     state = req.body.state;
-     zip = req.body.zip;
+     req.body.bankID? bankID = req.body.bankID: bankID = null;
+     req.body.street? street = req.body.street: street = null;
+     req.body.city? city = req.body.city: city = null;
+     req.body.state? state = req.body.state: state = null;
+     req.body.zip? zip = req.body.zip: zip = null;
      resAssets = req.body.resAssets;
-     corpID = req.body.corpID;
-     employee = req.body.employee;
-     manager = req.body.manager;
+     req.body.corpID? corpID = req.body.corpID: corpID = null;
+     req.body.employee? employee = req.body.employee: employee = null;
+     req.body.manager? manager = req.body.manager: manager = null;
+     req.body.name? name = req.body.name: name = null;
   }
 
   connection.query(
