@@ -140,8 +140,30 @@ delimiter ;
 drop procedure if exists stop_employee_role;
 delimiter //
 create procedure stop_employee_role (in ip_perID varchar(100))
-begin
-	-- Implement your code here
+sp_main: begin
+	if (ip_perID not in (select perID from employee)
+    or ip_perID in (select manager from bank)
+    or 1 in (select num_employees from workFor natural join (select bankID, count(*) as num_employees from workFor group by bankID) as b where perID = ip_perID)
+	) then leave sp_main;
+    end if;
+    
+    -- if person exists in join customer-employee role, delete employee only
+    if (ip_perId in (select perID from customer))
+		then begin
+			delete from workFor where ip_perID = perID;
+			delete from employee where ip_perID = perID;
+		end;
+	end if;
+    
+    -- if person is not customer, delete employee and person
+    if (ip_perId not in (select perID from customer))
+		then begin
+			delete from workFor where ip_perID = perID;
+			delete from employee where ip_perID = perID;
+            delete from bank_user where ip_perID = perID;
+            delete from person where ip_perID = perID;
+        end;
+	end if;
 end //
 delimiter ;
 
@@ -153,8 +175,31 @@ delimiter ;
 drop procedure if exists stop_customer_role;
 delimiter //
 create procedure stop_customer_role (in ip_perID varchar(100))
-begin
-	-- Implement your code here
+sp_main: begin
+	if (ip_perID not in (select perID from customer)
+    or 1 in (select num_accounts from access natural join (select bankID, accountID, count(*) as num_accounts from access group by bankID, accountID) as a where perID = ip_perID)
+	)then leave sp_main;
+    end if;
+    
+    -- if person exists in joint customer-employee role, delete customer only
+    if (ip_perId in (select perID from employee))
+		then begin
+			delete from customer_contacts where ip_perID = perID;
+			delete from access where ip_perID = perID;
+			delete from customer where ip_perID = perID;
+		end;
+	end if;
+    
+    -- if person is not employee, delete customer and person
+    if (ip_perId not in (select perID from employee))
+		then begin
+			delete from customer_contacts where ip_perID = perID;
+			delete from access where ip_perID = perID;
+			delete from customer where ip_perID = perID;
+            delete from bank_user where ip_perID = perID;
+            delete from person where ip_perID = perID;
+        end;
+	end if;
 end //
 delimiter ;
 
@@ -268,7 +313,7 @@ delimiter //
 create procedure account_deposit (in ip_requester varchar(100), in ip_deposit_amount integer,
 	in ip_bankID varchar(100), in ip_accountID varchar(100), in ip_dtAction date)
 begin
-	-- Implement your code here	
+	-- Implement your code here
 end //
 delimiter ;
 
@@ -403,4 +448,5 @@ create or replace view display_customer_stats as
 
 -- [24] display_employee_stats()
 -- Display the simple and derived attributes for each employee
--- create or replace view display_employee_stats as
+create or replace view display_employee_stats as
+	select * from employee;
