@@ -498,4 +498,10 @@ create or replace view display_customer_stats as
 -- [24] display_employee_stats()
 -- Display the simple and derived attributes for each employee
 create or replace view display_employee_stats as
-	select * from employee;
+	select perID as person_idenfifier, taxID as tax_identifier, CONCAT(firstName, ' ', lastName) as employee_name,
+	birthdate as date_of_birth, dtJoined as joined_system, street, city, state, zip,
+	numBanks as number_of_banks, bank_assets from employee
+	natural join person natural join bank_user natural left outer join
+	(select perID, count(*) as numBanks, sum(total_assets) as bank_assets from workFor
+	natural join (select bank_identifier as bankID, total_assets from display_bank_stats)
+	as b group by perID) as b;

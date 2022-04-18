@@ -25,7 +25,7 @@ export default function employeeView({ data }) {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Display Employee Stats</h1>
-        <MyTable columns={["Bank", "Account ID", "Account Balance ($)", "Number of Owners"]} data={data}/>
+        <MyTable columns={["Per ID", "Tax ID", "Name", "DOB", "Date Joined", "Street", "City", "State", "Zip", "Number of Banks", "Bank Assets"]} data={data}/>
       </main>
     </div>
   );
