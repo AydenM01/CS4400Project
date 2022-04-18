@@ -1,7 +1,7 @@
 -- CS4400: Introduction to Database Systems
--- Bank Management Project Phase 3 Physical Schema (v2)
+-- Bank Management Project Phase 3 Physical Schema
 -- Converting Relational Schema into a Database & Inserting Data
--- April 4th, 2022
+-- March 18th, 2022
 
 drop database if exists bank_management;
 create database if not exists bank_management;
@@ -325,8 +325,8 @@ insert into checking values
 ('WF_2','checking_A', null, null, null, null),
 ('BA_West','checking_A','BA_West', 'savings_B', 600, '2021-12-08'),
 ('NASA_Goddard','company_checking', null, null, null, null),
-('NASA_KSC','company_checking', "NASA_Goddard", 'company_savings', null, null),
-('TD_Online','company_checking', 'BA_South', 'GT_savings', 1, '2020-08-07');
+('NASA_KSC','company_checking', null, null, null, null),
+('TD_Online','company_checking', null, null, null, null);
 
 create table workFor (
 	bankID varchar(100),

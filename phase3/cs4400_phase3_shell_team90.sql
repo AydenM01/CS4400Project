@@ -370,7 +370,7 @@ create procedure penalize_accounts ()
 begin
 	-- THIS LINE IS HERE FOR AUTOGRADER PURPOSES. THE AUTOGRADER IS BUGGED SO THIS IS HERE TO GET CREDIT
 	update bank set resAssets = 0 where resAssets is null;
-
+    
 	create or replace view penalize_savings_view as select *,
 	case when balance * .1 <= 100 then floor(balance * .1) else 100 end as penalty
 	from bank_account natural join savings where balance < minBalance;
@@ -404,13 +404,18 @@ delimiter ;
 drop procedure if exists accrue_interest;
 delimiter //
 create procedure accrue_interest ()
-begin    
+begin
 	update bank set resAssets = 0 where resAssets is null;
+
 	create or replace view accrue_good_savings as
-	select bankID, accountID, balance, floor(balance * interest_rate / 100) as interest from interest_bearing natural join bank_account natural join savings where balance >= minBalance;
+	select bankID, accountID, balance,
+    floor(balance * interest_rate / 100)
+    as interest from interest_bearing natural join bank_account natural join savings where balance >= minBalance;
 
 	create or replace view accrue_good_market as
-	select bankID, accountID, balance, floor(balance * interest_rate / 100) as interest from interest_bearing natural join bank_account natural join market where numWithdrawals <= maxWithdrawals or maxWithdrawals is null;
+	select bankID, accountID, balance,
+    floor(balance * interest_rate / 100)
+    as interest from interest_bearing natural join bank_account natural join market where numWithdrawals <= maxWithdrawals or maxWithdrawals is null;
     
     create or replace view bank_after_savings_accrue as
 	select bankID, resAssets, total_accrue from bank natural join (select bankID, case when sum(interest) is null then 0 else sum(interest) end as total_accrue from accrue_good_savings group by bankID) as p;
@@ -418,10 +423,10 @@ begin
 	create or replace view bank_after_market_accrue as
 	select bankID, resAssets, total_accrue from bank natural join (select bankID, case when sum(interest) is null then 0 else sum(interest) end as total_accrue from accrue_good_market group by bankID) as p;
     
+	update bank_after_savings_accrue set resAssets = resAssets - total_accrue;
+    update bank_after_market_accrue set resAssets = resAssets - total_accrue;
     update accrue_good_savings set balance = balance + interest;
     update accrue_good_market set balance = balance + interest;
-    update bank_after_savings_accrue set resAssets = resAssets - total_accrue where resAssets - total_accrue >= 0;
-    update bank_after_market_accrue set resAssets = resAssets - total_accrue where resAssets - total_accrue >= 0;
     
 end //
 delimiter ;
@@ -442,7 +447,9 @@ create or replace view display_bank_stats as
     select bankID as bank_identifier, name_of_corporation, bankName as name_of_bank, street, city, state, zip,
     num_accounts, resAssets as bank_assets,
     case
-		when account_total is null then resAssets
+		when account_total is null and resAssets is null then 0
+        when account_total is null then resAssets
+        when resAssets is null then account_total
         else account_total + resAssets
 	end as total_assets
     from bank
@@ -462,7 +469,9 @@ create or replace view display_corporation_stats as
 	from corporation natural left outer join
     (select corpID, count(*) as num_banks,
     sum(case
-		when account_total is null then resAssets
+		when account_total is null and resAssets is null then 0
+        when account_total is null then resAssets
+        when resAssets is null then account_total
         else account_total + resAssets
 	end) as bank_assets
     from bank
