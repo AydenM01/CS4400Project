@@ -257,8 +257,61 @@ create procedure add_account_access (in ip_requester varchar(100), in ip_custome
     in ip_accountID varchar(100), in ip_balance integer, in ip_interest_rate integer,
     in ip_dtDeposit date, in ip_minBalance integer, in ip_numWithdrawals integer,
     in ip_maxWithdrawals integer, in ip_dtShareStart date)
-begin
+sp_main: begin
 	-- Implement your code here
+    
+    -- if the account does not exist...
+	if (not exists (select * from bank_account where
+    bankID = ip_bankID and accountID = ip_accountID))
+		then begin
+			-- if the requester is not an admin, break
+			if not exists (select * from system_admin where
+            perID = ip_requester) then leave sp_main;
+            end if;
+            -- if the customer being added does not exist, break
+            if not exists (select * from customer where
+            perID = ip_customer) then leave sp_main;
+            end if;
+            -- otherwise,
+            insert into bank_account(bankID, accountID, balance) values (ip_bankID, ip_accountID, ip_balance);
+            if ip_account_type = 'checking' then 
+				insert into checking values (ip_bankID, ip_accountID, null, null, null, null);
+            end if;
+            if ip_account_type = 'savings' then 
+				begin
+					insert into interest_bearing values (ip_bankID, ip_accountID, ip_interest_rate, ip_dtDeposit);
+					insert into savings(bankID, accountID, minBalance) values (ip_bankID, ip_accountID, ip_minBalance);
+                end;
+            end if;
+            if ip_account_type = 'market' then 
+				begin
+					insert into interest_bearing values (ip_bankID, ip_accountID, ip_interest_rate, ip_dtDeposit);
+					insert into market(bankID, accountID, maxWithdrawals, numWithdrawals) values (ip_bankID, ip_accountID, ip_maxWithdrawals, ip_numWithdrawals);
+                end;
+            end if;
+		end;
+	else
+		begin
+			-- if the requester is not an admin, break
+			if not exists (select * from system_admin where
+            perID = ip_requester) then leave sp_main;
+            end if;
+            -- if the customer adding access does not have access already, break
+            if not exists (select * from access where
+            perID = ip_customer and bankID = ip_bankID and accountID = ip_accountID) then leave sp_main;
+            end if;
+            -- if the customer being added does not exist, break
+            if not exists (select * from customer where
+            perID = ip_customer) then leave sp_main;
+            end if;
+		end;
+	end if;
+    
+	insert into access values (ip_customer, ip_bankID, ip_accountID, ip_dtShareStart, null);
+    
+    
+    
+            
 end //
 delimiter ;
 
@@ -275,8 +328,32 @@ drop procedure if exists remove_account_access;
 delimiter //
 create procedure remove_account_access (in ip_requester varchar(100), in ip_sharer varchar(100),
 	in ip_bankID varchar(100), in ip_accountID varchar(100))
-begin
+sp_main: begin
 	-- Implement your code here
+    -- if the person removing access is not an admin or has access
+    if (not exists (select * from system_admin where perID = ip_requester)) or 
+    (not exists (select * from access where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID)) then leave sp_main;
+    end if;
+    -- if the person being removed doesn't already have access, break
+    -- if not exists (select * from access where
+    -- perID = ip_sharer and bankID = ip_bankID and accountID = ip_accountID) then leave sp_main;
+	-- end if;
+    
+    delete from access where perID = ip_sharer and bankID = ip_bankID and accountID = ip_accountID;
+    
+    -- if the person being removed is the last person with access to the account, remove access and close account
+    if not exists (select * from access where
+    bankID = ip_bankID and accountID = ip_accountID)
+		then begin
+			delete from checking where bankID = ip_bankID and accountID = ip_accountID;
+            update checking set protectionBank = null, protectionAccount = null where protectionBank = ip_bankID and protectionAccount = ip_sharer;
+            delete from savings where bankID = ip_bankID and accountID = ip_accountID;
+            delete from market where bankID = ip_bankID and accountID = ip_accountID;
+            delete from interest_bearing_fees where bankID = ip_bankID and accountID = ip_accountID;
+            delete from interest_bearing where bankID = ip_bankID and accountID = ip_accountID;
+            delete from bank_account where bankID = ip_bankID and accountID = ip_accountID;
+		end;
+    end if;
     
 end //
 delimiter ;
@@ -286,8 +363,16 @@ drop procedure if exists create_fee;
 delimiter //
 create procedure create_fee (in ip_bankID varchar(100), in ip_accountID varchar(100),
 	in ip_fee_type varchar(100))
-begin
+sp_main: begin
 	-- Implement your code here
+    
+    -- if the bank or account does not exist, break
+    if not exists (select * from interest_bearing where 
+    bankID = ip_bankID and accountID = ip_accountID) then leave sp_main;
+    end if;
+    
+    insert into interest_bearing_fees(bankID, accountID, fee)
+    values (ip_bankID, ip_accountID, ip_fee_type);
     
 end //
 delimiter ;
@@ -343,16 +428,16 @@ create procedure stop_overdraft (in ip_requester varchar(100),
 sp_main: begin
 	-- Implement your code here
     
-    -- if the accounts for checking bank and savings bank don't exist, break
+    -- if the account doesn't exist, break
     if (not exists (select * from bank_account where 
-    bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
-    not exists (select * from bank_account where 
-    bankID = ip_savings_bankID and accountID = ip_savings_accountID)) then leave sp_main;
+    bankID = ip_checking_bankID and accountID = ip_checking_accountID)) then leave sp_main;
     end if;
     
-    -- if the requester doesn't have access to the checking account, break
+    -- if the requester doesn't have access to the checking account or savings account, break
     if (not exists (select * from access where
-    perID = ip_requester and bankID = ip_checking_bankID and accountID = ip_checking_accountID)) then leave sp_main;
+    perID = ip_requester and bankID = ip_checking_bankID and accountID = ip_checking_accountID))
+    or not exists (select * from access natural join checking where
+    (perID = ip_requester and checking.bankID = checking.protectionBank and checking.accountID = checking.protectionAccount)) then leave sp_main;
     end if;
     
     update checking set protectionBank = null, protectionAccount = null
