@@ -233,8 +233,15 @@ drop procedure if exists replace_manager;
 delimiter //
 create procedure replace_manager (in ip_perID varchar(100), in ip_bankID varchar(100),
 	in ip_salary integer)
-begin
-	-- Implement your code here
+sp_main: begin
+	if (ip_perID not in (select perID from employee)
+		or ip_perID in (select manager from bank)
+        or ip_perID in (select distinct perID from workFor)
+	) then leave sp_main;
+    end if;
+        
+	update employee set salary = ip_salary where perID = ip_perID;
+    update bank set manager = ip_perID where bankID = ip_bankID;
 end //
 delimiter ;
 
@@ -431,12 +438,12 @@ begin
 
 	create or replace view accrue_good_savings as
 	select bankID, accountID, balance,
-    floor(balance * interest_rate / 100)
+    ifnull(floor(balance * interest_rate / 100), 0)
     as interest from interest_bearing natural join bank_account natural join savings where balance >= minBalance;
 
 	create or replace view accrue_good_market as
 	select bankID, accountID, balance,
-    floor(balance * interest_rate / 100)
+    ifnull(floor(balance * interest_rate / 100), 0)
     as interest from interest_bearing natural join bank_account natural join market where numWithdrawals <= maxWithdrawals or maxWithdrawals is null;
     
     create or replace view bank_after_savings_accrue as
