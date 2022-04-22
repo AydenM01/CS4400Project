@@ -325,8 +325,22 @@ drop procedure if exists account_deposit;
 delimiter //
 create procedure account_deposit (in ip_requester varchar(100), in ip_deposit_amount integer,
 	in ip_bankID varchar(100), in ip_accountID varchar(100), in ip_dtAction date)
-begin
-	-- Implement your code here
+sp_main: begin    
+    if (ip_requester not in
+    (select perID from access where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID)
+    or ip_deposit_amount <= 0 or ip_deposit_amount is NULL) 
+    then leave sp_main; 
+    end if;
+
+    if (ip_bankID in (select bankID from interest_bearing where bankID = ip_bankID and accountID = ip_accountID)
+    and ip_accountID in (select accountID from interest_bearing where bankID = ip_bankID and accountID = ip_accountID))
+    then begin
+		update interest_bearing set dtDeposit = ip_dtAction where bankID = ip_bankID and accountID = ip_accountID;
+    end;
+    end if;
+
+    update bank_account set balance = (ifnull(balance, 0) + ip_deposit_amount) where bankID = ip_bankID and accountID = ip_accountID;
+    update access set dtAction = ip_dtAction where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID;
 end //
 delimiter ;
 
@@ -339,8 +353,70 @@ drop procedure if exists account_withdrawal;
 delimiter //
 create procedure account_withdrawal (in ip_requester varchar(100), in ip_withdrawal_amount integer,
 	in ip_bankID varchar(100), in ip_accountID varchar(100), in ip_dtAction date)
-begin
-	-- Implement your code here
+sp_main: begin
+    if (ip_requester not in
+    (select perID from access where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID)
+    or (ip_withdrawal_amount <= 0) or ip_withdrawal_amount is NULL) 
+    then leave sp_main; 
+    end if;
+
+    -- updating if savings account
+    if ( (ip_bankID in (select bankID from savings where bankID = ip_bankID and accountID = ip_accountID))
+    and (ip_accountID in (select accountID from savings where bankID = ip_bankID and accountID = ip_accountID))
+    and (ip_withdrawal_amount <= ((select balance from bank_account where bankID = ip_bankID and accountID = ip_accountID))))
+    then begin
+        update bank_account set balance = (balance - ip_withdrawal_amount) where bankID = ip_bankID and accountID = ip_accountID;
+        update access set dtAction = ip_dtAction where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID;
+        leave sp_main;
+	end;
+    end if;
+
+    -- updating if market account
+    if ( (ip_bankID in (select bankID from market where bankID = ip_bankID and accountID = ip_accountID))
+    and (ip_accountID in (select accountID from market where bankID = ip_bankID and accountID = ip_accountID))
+    and (ip_withdrawal_amount <= (select balance from bank_account where bankID = ip_bankID and accountID = ip_accountID)))
+    then begin
+        update bank_account set balance = (balance - ip_withdrawal_amount) where bankID = ip_bankID and accountID = ip_accountID;
+        update access set dtAction = ip_dtAction where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID;
+        update market set numWithdrawals = (numWithdrawals + 1) where bankID = ip_bankID and accountID = ip_accountID;
+        leave sp_main;
+	end;
+    end if;
+
+    -- updating if checking account
+    -- if checking account can cover the withdrawal
+    if ( (ip_bankID in (select bankID from checking where bankID = ip_bankID and accountID = ip_accountID))
+    and (ip_accountID in (select accountID from checking where bankID = ip_bankID and accountID = ip_accountID))
+    and (ip_withdrawal_amount <= (select balance from bank_account where bankID = ip_bankID and accountID = ip_accountID)))
+    then begin
+		update bank_account set balance = (balance - ip_withdrawal_amount) where bankID = ip_bankID and accountID = ip_accountID;
+        update access set dtAction = ip_dtAction where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID;
+        leave sp_main;
+    end;
+    end if;
+    
+    
+    -- if checking account cannot cover the withdrawal
+    if ( (ip_bankID in (select bankID from checking where bankID = ip_bankID and accountID = ip_accountID))
+    and (ip_accountID in (select accountID from checking where bankID = ip_bankID and accountID = ip_accountID))
+    and (select protectionAccount from checking where bankID = ip_bankID and accountID = ip_accountID) is not NULL
+    and (select protectionBank from checking where bankID = ip_bankID and accountID = ip_accountID) is not NULL
+    and (((select balance from bank_account where bankID = ip_bankID and accountID = ip_accountID) 
+    + (select balance from bank_account where accountID = (select protectionAccount from checking where bankID = ip_bankID and accountID = ip_accountID) and bankID = (select protectionBank from checking where bankID = ip_bankID and accountID = ip_accountID))) 
+    - (ip_withdrawal_amount)) >= 0
+    )
+    then begin
+        update bank_account set balance = (balance - (ip_withdrawal_amount - (select * from (select balance from bank_account where bankID = ip_bankID and accountID = ip_accountID) as x)))
+        where bankID = (select protectionBank from checking where bankID = ip_bankID and accountID = ip_accountID) and accountID = (select protectionAccount from checking where bankID = ip_bankID and accountID = ip_accountID);
+        update checking set amount = (ip_withdrawal_amount - (select balance from bank_account where bankID = ip_bankID and accountID = ip_accountID)) where bankID = ip_bankID and accountID = ip_accountID;
+        update bank_account set balance = 0 where bankID = ip_bankID and accountID = ip_accountID;
+        update access set dtAction = ip_dtAction where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID;
+        update access set dtAction = ip_dtAction where perID = ip_requester and accountID = (select protectionAccount from checking where bankID = ip_bankID and accountID = ip_accountID) and bankID = (select protectionBank from checking where bankID = ip_bankID and accountID = ip_accountID);
+        update checking set dtOverdraft = ip_dtAction where bankID = ip_bankID and accountID = ip_accountID;
+        leave sp_main;
+    end;
+    end if;
+
 end //
 delimiter ;
 
@@ -354,8 +430,22 @@ delimiter //
 create procedure account_transfer (in ip_requester varchar(100), in ip_transfer_amount integer,
 	in ip_from_bankID varchar(100), in ip_from_accountID varchar(100),
     in ip_to_bankID varchar(100), in ip_to_accountID varchar(100), in ip_dtAction date)
-begin
-	-- Implement your code here
+sp_main: begin
+	if (ip_requester not in
+    (select perID from access where perID = ip_requester and bankID = ip_from_bankID and accountID = ip_from_accountID)
+    or (ip_requester not in
+    (select perID from access where perID = ip_requester and bankID = ip_to_bankID and accountID = ip_to_accountID))
+    or (ip_transfer_amount <= 0) or ip_transfer_amount is NULL) 
+    then leave sp_main;
+    end if;
+    
+    
+	call account_withdrawal(ip_requester, ip_transfer_amount, ip_from_bankID, ip_from_accountID, ip_dtAction);
+    if (ip_dtAction != (select dtAction from access where perID = ip_requester and bankID = ip_from_bankID and accountID = ip_from_accountID))
+    then leave sp_main; 
+    end if;
+	call account_deposit(ip_requester, ip_transfer_amount, ip_to_bankID, ip_to_accountID, ip_dtAction);
+
 end //
 delimiter ;
 
