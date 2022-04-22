@@ -212,8 +212,14 @@ drop procedure if exists hire_worker;
 delimiter //
 create procedure hire_worker (in ip_perID varchar(100), in ip_bankID varchar(100),
 	in ip_salary integer)
-begin
-	-- Implement your code here
+sp_main: begin
+	if (ip_perID not in (select perID from employee)
+		or ip_perID in (select manager from bank)
+	) then leave sp_main;
+    end if;
+        
+	insert into workFor(bankID, perID) values (ip_bankID, ip_perID);
+	update employee set salary = ip_salary where perID = ip_perID;
 end //
 delimiter ;
 
@@ -355,7 +361,23 @@ drop procedure if exists pay_employees;
 delimiter //
 create procedure pay_employees ()
 begin
-    -- Implement your code here
+   create or replace view workers_w_numbanks as
+	select perID, salary, payments, earned, num_banks, floor(salary / num_banks) as money_per_bank from employee
+	natural left outer join (select perID, count(*) as num_banks from workFor group by perID) as p;
+
+	create or replace view employee_gets_paid_bank_view as
+	select bankID, money_per_bank as loss, resAssets from workers_w_numbanks natural join workFor natural join bank where num_banks >= 1 and money_per_bank > 0;
+
+	-- penalize banks
+	update bank
+	natural join (select bankId, ifnull(resAssets - sum(money_per_bank), -sum(money_per_bank)) as new_resAssets from workers_w_numbanks natural join workFor natural join bank where num_banks >= 1 and money_per_bank > 0 group by bankID)
+	as b set resAssets = new_resAssets;
+
+	-- pay employees
+	update employee set
+	payments = ifnull(payments + 1, 1),
+	earned = ifnull(salary + earned, earned);
+
 end //
 delimiter ;
 
