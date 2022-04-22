@@ -2004,10 +2004,10 @@ INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (1
 INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'ba_west#checking_a#1000############');
 INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'ba_west#savings_b#8000############');
 INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'nasa_goddard#company_checking#############');
-INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'nasa_goddard#company_savings#############');
+INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'nasa_goddard#company_savings#1000000############');
 INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'nasa_ksc#company_checking#150000############');
 INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'td_gt#roth_ira#16200############');
-INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'td_gt#savings_a#############');
+INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'td_gt#savings_a#8500############');
 INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'td_online#company_checking#0############');
 INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'td_online#roth_ira#187040############');
 INSERT INTO magic44_expected_results (`step_id`,`query_id`,`row_hash`) VALUES (190,18,'wf_2#checking_a#2700############');
