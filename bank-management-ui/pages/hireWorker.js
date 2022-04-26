@@ -1,8 +1,9 @@
 import Head from "next/head";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { url } from "../lib/env";
+import AppContext from "../AppContext";
 import {
   Grid,
   Paper,
@@ -14,12 +15,12 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import Link from "next/link";
 
 export async function getServerSideProps() {
   const bankIDs = await fetch(url + `/api/getBankIDs`);
   const bankIDsJSON = await bankIDs.json();
-
-  const employeeIDs = await fetch(url + `/api/getEmployeeIDs`);
+  const employeeIDs = await fetch(url + `/api/getHireableEmployees`);
   const employeeIDsJSON = await employeeIDs.json();
 
   let bankInit = bankIDsJSON[0]["bankID"];
@@ -32,10 +33,33 @@ export async function getServerSideProps() {
 }
 
 export default function hireWorker(props) {
+  const { userData, setUserData } = useContext(AppContext);
   const [employee, setEmployee] = useState(props.employeeInit);
   const [bank, setBank] = useState(props.bankInit);
+  const [salary, setSalary] = useState(0);
 
-  return (
+  const handleHire = async (perID, bankID, salary) => {
+    const rawResponse = await fetch(url + "/api/hireWorker", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        perID: perID,
+        bankID: bankID,
+        salary: salary,
+      }),
+    });
+
+    const response = await rawResponse.json();
+    if (rawResponse.status === 400) {
+      alert(response.sqlMessage);
+    } else if (rawResponse.status === 200) {
+      alert("Success");
+    }
+  };
+  return userData.userRole.includes("e") ? (
     <div className={styles.container}>
       <Head>
         <title>Bank Management UI</title>
@@ -96,20 +120,40 @@ export default function hireWorker(props) {
 
         <Grid item xs={2} />
 
+        <Grid item xs={8}>
+          <TextField
+            fullWidth
+            label="Salary"
+            type="number"
+            value={salary}
+            onChange={(e) => setSalary(e.target.value)}
+          />
+        </Grid>
+
+        <Grid item xs={2} />
+
+        <Grid item xs={2} />
+
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
-            {" "}
-            Cancel{" "}
-          </Button>
+          <Link href="managerMenu">
+            <Button variant="contained" color="error" fullWidth>
+              Cancel
+            </Button>
+          </Link>
         </Grid>
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
-            {" "}
-            Confirm{" "}
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={() => handleHire(employee, bank, salary)}
+          >
+            Confirm
           </Button>
         </Grid>
         <Grid item xs={2} />
       </Grid>
     </div>
+  ) : (
+    <h1>Not Authorized</h1>
   );
 }

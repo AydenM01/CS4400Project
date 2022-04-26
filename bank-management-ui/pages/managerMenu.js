@@ -2,11 +2,15 @@ import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { url } from "../lib/env";
-import { TextField } from "@mui/material";
-import { useState } from "react";
+import { TextField, Button } from "@mui/material";
+import { useState, useContext } from "react";
+import AppContext from "../AppContext";
+import Link from "next/link";
 
-export default function ManagerMenu() {
-  return (
+const ManagerMenu = () => {
+  const { userData, setUserData } = useContext(AppContext);
+  console.log(userData);
+  return userData.userRole.includes("e") ? (
     <div className={styles.container}>
       <Head>
         <title>Bank Management UI Home</title>
@@ -18,14 +22,28 @@ export default function ManagerMenu() {
         <h2 className={styles.title}>Manager Menu</h2>
 
         <div className={styles.grid}>
-          <a href={url + "/payEmployee"} className={styles.card}>
-            <h2>Pay Employee &rarr;</h2>
-          </a>
-          <a href={url + "/hireWorker"} className={styles.card}>
-            <h2>Hire Worker &rarr;</h2>
-          </a>
+          <Link href={"/payEmployees"}>
+            <a className={styles.card}>
+              <h2>Pay Employee &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/hireWorker"}>
+            <a className={styles.card}>
+              <h2>Hire Worker &rarr;</h2>
+            </a>
+          </Link>
+          <Link href={"/"}>
+            <Button fullWidth color="error" variant="contained">
+              Back
+            </Button>
+          </Link>
         </div>
       </main>
     </div>
+  ) : (
+    <h1>Not Authorized</h1>
   );
-}
+};
+
+export default ManagerMenu;

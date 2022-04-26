@@ -18,25 +18,35 @@ export default function StatsMenu() {
         <h2 className={styles.title}>View Stats</h2>
 
         <div className={styles.grid}>
-          <a href={url + "/accountView"} className={styles.card}>
-            <h2>Account Stats &rarr;</h2>
-          </a>
+          <Link href={"/accountView"}>
+            <a className={styles.card}>
+              <h2>Account Stats &rarr;</h2>
+            </a>
+          </Link>
 
-          <a href={url + "/bankView"} className={styles.card}>
-            <h2>Bank Stats &rarr;</h2>
-          </a>
+          <Link href={"/bankView"}>
+            <a className={styles.card}>
+              <h2>Bank Stats &rarr;</h2>
+            </a>
+          </Link>
 
-          <a href={url + "/corporationView"} className={styles.card}>
-            <h2>Corporation Stats &rarr;</h2>
-          </a>
+          <Link href={"/corporationView"}>
+            <a className={styles.card}>
+              <h2>Corporation Stats &rarr;</h2>
+            </a>
+          </Link>
 
-          <a href={url + "/customerView"} className={styles.card}>
-            <h2>Customer Stats &rarr;</h2>
-          </a>
+          <Link href={"/customerView"}>
+            <a className={styles.card}>
+              <h2>Customer Stats &rarr;</h2>
+            </a>
+          </Link>
 
-          <a href={url + "/employeeView"} className={styles.card}>
-            <h2>Employee Stats &rarr;</h2>
-          </a>
+          <Link href={"/employeeView"}>
+            <a className={styles.card}>
+              <h2>Employee Stats &rarr;</h2>
+            </a>
+          </Link>
         </div>
       </main>
     </div>

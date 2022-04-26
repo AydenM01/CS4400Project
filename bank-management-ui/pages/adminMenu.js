@@ -4,6 +4,7 @@ import styles from "../styles/Home.module.css";
 import { url } from "../lib/env";
 import { TextField } from "@mui/material";
 import { useState } from "react";
+import { Link } from "next/link";
 
 export default function AdminMenu() {
   return (
@@ -18,33 +19,59 @@ export default function AdminMenu() {
         <h2 className={styles.title}>Admin Menu</h2>
 
         <div className={styles.grid}>
-          <a href={url + "/statsMenu"} className={styles.card}>
-            <h2>View Stats &rarr;</h2>
-          </a>
-          <a href={url + "/createCorporation"} className={styles.card}>
-            <h2>Create Corporation &rarr;</h2>
-          </a>
-          <a href={url + "/createFee"} className={styles.card}>
-            <h2>Create Fee &rarr;</h2>
-          </a>
-          <a href={url + "/manageUsers"} className={styles.card}>
-            <h2>Manage Users &rarr;</h2>
-          </a>
-          <a href={url + "/manageOverdraft"} className={styles.card}>
-            <h2>Manage Overdraft &rarr;</h2>
-          </a>
-          <a href={url + "/hireWorker"} className={styles.card}>
-            <h2>Hire Worker &rarr;</h2>
-          </a>
-          <a href={url + "/payEmployees"} className={styles.card}>
-            <h2>Pay Employees &rarr;</h2>
-          </a>
-          <a href={url + "/replaceManager"} className={styles.card}>
-            <h2>Replace Manager &rarr;</h2>
-          </a>
-          <a href={url + "/manageAccounts"} className={styles.card}>
-            <h2>Manage Accounts &rarr;</h2>
-          </a>
+          <Link href={"/statsMenu"}>
+            <a className={styles.card}>
+              <h2>View Stats &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/createCorporation"}>
+            <a className={styles.card}>
+              <h2>Create Corporation &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/createFee"}>
+            <a className={styles.card}>
+              <h2>Create Fee &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/manageUsers"}>
+            <a className={styles.card}>
+              <h2>Manage Users &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/manageOverdraft"}>
+            <a className={styles.card}>
+              <h2>Manage Overdraft &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/hireWorker"}>
+            <a className={styles.card}>
+              <h2>Hire Worker &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/payEmployees"}>
+            <a className={styles.card}>
+              <h2>Pay Employees &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/replaceManager"}>
+            <a className={styles.card}>
+              <h2>Replace Manager &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/manageAccounts"}>
+            <a className={styles.card}>
+              <h2>Manage Accounts &rarr;</h2>
+            </a>
+          </Link>
         </div>
       </main>
     </div>

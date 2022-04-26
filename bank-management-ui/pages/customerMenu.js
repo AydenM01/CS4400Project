@@ -2,8 +2,9 @@ import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { url } from "../lib/env";
-import { TextField } from "@mui/material";
+import { TextField, Button } from "@mui/material";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function CustomerMenu() {
   return (
@@ -18,18 +19,35 @@ export default function CustomerMenu() {
         <h2 className={styles.title}>Customer Menu</h2>
 
         <div className={styles.grid}>
-          <a href={url + "/manageAccounts"} className={styles.card}>
-            <h2>Manage Accounts &rarr;</h2>
-          </a>
-          <a href={url + "/depositOrWithdrawal"} className={styles.card}>
-            <h2>Deposit / Withdrawal &rarr;</h2>
-          </a>
-          <a href={url + "/manageOverdraft"} className={styles.card}>
-            <h2>Manage Overdraft &rarr;</h2>
-          </a>
-          <a href={url + "/makeTransfer"} className={styles.card}>
-            <h2>Make Transfer &rarr;</h2>
-          </a>
+          <Link href={"/manageAccounts"}>
+            <a className={styles.card}>
+              <h2>Manage Accounts &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/depositOrWithdrawal"}>
+            <a className={styles.card}>
+              <h2>Deposit / Withdrawal &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/manageOverdraft"}>
+            <a className={styles.card}>
+              <h2>Manage Overdraft &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/makeTransfer"}>
+            <a className={styles.card}>
+              <h2>Make Transfer &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/"}>
+            <Button fullWidth color="error" variant="contained">
+              Back
+            </Button>
+          </Link>
         </div>
       </main>
     </div>

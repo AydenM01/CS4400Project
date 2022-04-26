@@ -1,8 +1,11 @@
 import Head from "next/head";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { url } from "../lib/env";
+import AppContext from "../AppContext";
+import Link from "next/link";
+
 import {
   Grid,
   Paper,
@@ -16,7 +19,19 @@ import {
 } from "@mui/material";
 
 export default function payEmployees(props) {
-  return (
+  const { userData, setUserData } = useContext(AppContext);
+
+  const handlePayEmployees = async () => {
+    const res = await fetch(`/api/payEmployees`);
+    if (res.status === 200) {
+      alert("Pay Successful");
+    } else {
+      alert("Pay Failed");
+    }
+    return null;
+  };
+
+  return userData.userRole.includes("e") ? (
     <div className={styles.container}>
       <Head>
         <title>Bank Management UI</title>
@@ -31,13 +46,26 @@ export default function payEmployees(props) {
 
         <Grid item xs={2} />
         <Grid item xs={8}>
-          <Button fullWidth variant="contained">
+          <Button fullWidth variant="contained" onClick={handlePayEmployees}>
             Pay All Employees
           </Button>
         </Grid>
 
         <Grid item xs={2} />
+
+        <Grid item xs={2} />
+        <Grid item xs={8}>
+          <Link href="/managerMenu">
+            <Button fullWidth variant="contained" color="error">
+              Back
+            </Button>
+          </Link>
+        </Grid>
+
+        <Grid item xs={2} />
       </Grid>
     </div>
+  ) : (
+    <h1> Not Authorized </h1>
   );
 }

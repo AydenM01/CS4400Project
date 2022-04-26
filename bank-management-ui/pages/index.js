@@ -1,32 +1,41 @@
 import Head from "next/head";
-import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { url } from "../lib/env";
 import { Button, TextField } from "@mui/material";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import AppContext from "../AppContext";
+import Link from "next/link";
 
-export default function Login() {
-  const [userID, setUserID] = useState("");
+const Login = () => {
+  const { userData, setUserData } = useContext(AppContext);
+  const [userIDInput, setUserIDInput] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
 
-  const Login = async (userID, password) => {
-    const rawResponse = await fetch(url + "/api/login", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userID: userID, password: password }),
-    });
-    const response = await rawResponse.json();
-    console.log(response);
-    if (response && response.length > 0) {
-      setRole(response[0].role);
-      setUserID(response[0].perID);
-    } else {
-      alert("Login Unsuccessful");
+  const handleSignIn = async (userID, password) => {
+    try {
+      const rawResponse = await fetch(url + "/api/login", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userID: userID, password: password }),
+      });
+      const response = await rawResponse.json();
+      if (response && response.length > 0) {
+        let userObj = { userID: response[0].perID, userRole: response[0].role };
+        setUserData(userObj);
+      } else {
+        alert("Login Unsuccessful");
+      }
+    } catch (err) {
+      console.log(err);
     }
+  };
+
+  const handleSignOut = () => {
+    let userObj = { userID: "", userRole: "" };
+    setUserData(userObj);
   };
 
   return (
@@ -38,15 +47,17 @@ export default function Login() {
       </Head>
 
       <main className={styles.main}>
-        {role === "" && (
+        {userData.userRole === "" && (
           <>
             <h2 className={styles.title}>Login</h2>
+
             <h2>User ID: </h2>
             <TextField
-              value={userID}
-              onChange={(e) => setUserID(e.target.value)}
+              value={userIDInput}
+              onChange={(e) => setUserIDInput(e.target.value)}
               style={{ width: 500 }}
             ></TextField>
+
             <h2>Password: </h2>
             <TextField
               type={"password"}
@@ -54,47 +65,64 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               style={{ width: 500 }}
             ></TextField>
+
             <Button
               variant="contained"
               style={{ width: 500, marginTop: 50, padding: 20 }}
-              onClick={() => Login(userID, password)}
+              onClick={() => handleSignIn(userIDInput, password)}
             >
               Login
             </Button>
+
             <h4>Don't have an account? </h4>
-            <a style={{ color: "blue" }} href={url + "/register"}>
-              {" "}
-              Register Here!
-            </a>
+            <Link href={"/register"}>
+              <a style={{ color: "blue" }}>Register Here!</a>
+            </Link>
           </>
         )}
 
-        {role !== "" && <h2 className={styles.title}>Welcome {userID}!</h2>}
+        {userData.userRole !== "" && (
+          <h2 className={styles.title}>Welcome {userData.userID}!</h2>
+        )}
 
-        {role === "a" && (
+        {userData.userRole === "a" && (
           <>
-            <a href={url + "/adminMenu"} className={styles.card}>
-              <h2>Login as Admin &rarr;</h2>
-            </a>
+            <Link href={"/adminMenu"}>
+              <a className={styles.card}>
+                <h2>Login as Admin &rarr;</h2>
+              </a>
+            </Link>
           </>
         )}
 
-        {(role === "e" || role === "e&c") && (
+        {(userData.userRole === "e" || userData.userRole === "e&c") && (
           <>
-            <a href={url + "/managerMenu"} className={styles.card}>
-              <h2>Login as Manager &rarr;</h2>
-            </a>
+            <Link href={"/managerMenu"}>
+              <a className={styles.card}>
+                <h2>Login as Manager &rarr;</h2>
+              </a>
+            </Link>
           </>
         )}
 
-        {(role === "c" || role === "e&c") && (
+        {(userData.userRole === "c" || userData.userRole === "e&c") && (
           <>
-            <a href={url + "/customerMenu"} className={styles.card}>
-              <h2>Login as Customer &rarr;</h2>
-            </a>
+            <Link href={"/customerMenu"}>
+              <a className={styles.card}>
+                <h2>Login as Customer &rarr;</h2>
+              </a>
+            </Link>
           </>
+        )}
+
+        {userData.userRole !== "" && (
+          <Button fullWidth variant="contained" onClick={handleSignOut}>
+            Sign Out
+          </Button>
         )}
       </main>
     </div>
   );
-}
+};
+
+export default Login;
