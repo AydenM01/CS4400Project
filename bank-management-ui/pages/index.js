@@ -21,8 +21,12 @@ export default function Login() {
     });
     const response = await rawResponse.json();
     console.log(response);
-    setRole(response[0].role);
-    setUserID(response[0].perID);
+    if (response && response.length > 0) {
+      setRole(response[0].role);
+      setUserID(response[0].perID);
+    } else {
+      alert("Login Unsuccessful");
+    }
   };
 
   return (

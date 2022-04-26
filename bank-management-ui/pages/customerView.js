@@ -36,7 +36,7 @@ export default function customerView({ data }) {
             "State",
             "Zip",
             "Number of Accounts",
-            "Customer Assets ($)"
+            "Customer Assets ($)",
           ]}
           data={data}
         />

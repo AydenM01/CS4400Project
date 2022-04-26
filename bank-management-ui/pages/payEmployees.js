@@ -16,7 +16,6 @@ import {
 } from "@mui/material";
 
 export default function payEmployees(props) {
-
   return (
     <div className={styles.container}>
       <Head>
@@ -32,9 +31,11 @@ export default function payEmployees(props) {
 
         <Grid item xs={2} />
         <Grid item xs={8}>
-          <Button fullWidth variant="contained" >Pay All Employees</Button>
+          <Button fullWidth variant="contained">
+            Pay All Employees
+          </Button>
         </Grid>
-        
+
         <Grid item xs={2} />
       </Grid>
     </div>

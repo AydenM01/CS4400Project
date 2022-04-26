@@ -68,7 +68,7 @@ export default function manageUsers(props) {
             </Select>
           </FormControl>{" "}
         </Grid>
-        
+
         <Grid item xs={2} />
 
         <Grid item xs={2} />
@@ -111,7 +111,7 @@ export default function manageUsers(props) {
             </Select>
           </FormControl>{" "}
         </Grid>
-        
+
         <Grid item xs={2} />
 
         <Grid item xs={2} />
