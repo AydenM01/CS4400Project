@@ -24,7 +24,15 @@ export default function accountView({ data }) {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Display Account Stats</h1>
-        <MyTable columns={["Bank", "Account ID", "Account Balance ($)", "Number of Owners"]} data={data}/>
+        <MyTable
+          columns={[
+            "Bank",
+            "Account ID",
+            "Account Balance ($)",
+            "Number of Owners",
+          ]}
+          data={data}
+        />
       </main>
     </div>
   );

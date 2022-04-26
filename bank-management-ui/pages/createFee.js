@@ -70,7 +70,7 @@ export default function createFee(props) {
             </Select>
           </FormControl>{" "}
         </Grid>
-        
+
         <Grid item xs={2} />
 
         <Grid item xs={2} />
@@ -93,14 +93,21 @@ export default function createFee(props) {
             </Select>
           </FormControl>{" "}
         </Grid>
-        
+
         <Grid item xs={2} />
 
         <Grid item xs={2} />
         <Grid item xs={8}>
-          <TextField fullWidth value={feeType} label={"Fee Type"} onChange={(e) => {setFeeType(e.target.value)}}></TextField>
+          <TextField
+            fullWidth
+            value={feeType}
+            label={"Fee Type"}
+            onChange={(e) => {
+              setFeeType(e.target.value);
+            }}
+          ></TextField>
         </Grid>
-        
+
         <Grid item xs={2} />
 
         <Grid item xs={2} />

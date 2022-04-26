@@ -96,7 +96,7 @@ export default function createEmployee(props) {
             onChange={(e) => setAccumEarnings(e.target.value)}
           />
         </Grid>
-        
+
         <Grid item xs={2} />
 
         <Grid item xs={2} />

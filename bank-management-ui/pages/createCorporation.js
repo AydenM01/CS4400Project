@@ -13,16 +13,21 @@ export default function createCorporation() {
 
   const handleCreate = async () => {
     const rawResponse = await fetch(url + "/api/createCorporation", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ corpID: corpID, longName: longName, shortName: shortName, resAssets: resAssets }),
-      });
-      const response = await rawResponse.json();
-      console.log(response);
-  }
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        corpID: corpID,
+        longName: longName,
+        shortName: shortName,
+        resAssets: resAssets,
+      }),
+    });
+    const response = await rawResponse.json();
+    console.log(response);
+  };
 
   return (
     <div className={styles.container}>
@@ -39,31 +44,54 @@ export default function createCorporation() {
 
         <Grid item xs={2} />
         <Grid item xs={4}>
-          <TextField required label="Corporation ID" fullWidth value={corpID} onChange={(e) => setCorpID(e.target.value)}/>
+          <TextField
+            required
+            label="Corporation ID"
+            fullWidth
+            value={corpID}
+            onChange={(e) => setCorpID(e.target.value)}
+          />
         </Grid>
         <Grid item xs={4}>
-          <TextField label="Long Name" fullWidth value={longName} onChange={(e) => setLongName(e.target.value)}/>
+          <TextField
+            label="Long Name"
+            fullWidth
+            value={longName}
+            onChange={(e) => setLongName(e.target.value)}
+          />
         </Grid>
         <Grid item xs={2} />
         <Grid item xs={2} />
         <Grid item xs={4}>
-          <TextField label="Short Name" fullWidth value={shortName} onChange={(e) => setShortName(e.target.value)}/>
+          <TextField
+            label="Short Name"
+            fullWidth
+            value={shortName}
+            onChange={(e) => setShortName(e.target.value)}
+          />
         </Grid>
         <Grid item xs={4}>
           <TextField
             label="Reserved Assets"
             fullWidth
             type="number"
-            value={resAssets} onChange={(e) => setResAssets(e.target.value)}
+            value={resAssets}
+            onChange={(e) => setResAssets(e.target.value)}
           />
         </Grid>
         <Grid item xs={2} />
         <Grid item xs={2} />
         <Grid item xs={4}>
-        <Button variant="contained" fullWidth> Cancel </Button>
+          <Button variant="contained" fullWidth>
+            {" "}
+            Cancel{" "}
+          </Button>
         </Grid>
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth onClick={handleCreate}> Create </Button>
+          <Button variant="contained" fullWidth onClick={handleCreate}>
+            {" "}
+            Create{" "}
+          </Button>
         </Grid>
         <Grid item xs={2} />
       </Grid>

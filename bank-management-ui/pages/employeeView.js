@@ -4,7 +4,7 @@ import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { url } from "../lib/env";
 import MyTable from "../components/MyTable";
-import Grid from '@mui/material'
+import Grid from "@mui/material";
 
 export async function getServerSideProps() {
   const res = await fetch(url + `/api/getEmployeeView`);
@@ -25,7 +25,22 @@ export default function employeeView({ data }) {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Display Employee Stats</h1>
-        <MyTable columns={["Per ID", "Tax ID", "Name", "DOB", "Date Joined", "Street", "City", "State", "Zip", "Number of Banks", "Bank Assets"]} data={data}/>
+        <MyTable
+          columns={[
+            "Per ID",
+            "Tax ID",
+            "Name",
+            "DOB",
+            "Date Joined",
+            "Street",
+            "City",
+            "State",
+            "Zip",
+            "Number of Banks",
+            "Bank Assets",
+          ]}
+          data={data}
+        />
       </main>
     </div>
   );

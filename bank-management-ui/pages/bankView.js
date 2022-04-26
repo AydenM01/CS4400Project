@@ -24,7 +24,8 @@ export default function bankView({ data }) {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Display Bank Stats</h1>
-        <MyTable columns={[
+        <MyTable
+          columns={[
             "Bank ID",
             "Corporation Name",
             "Bank Name",
@@ -34,8 +35,10 @@ export default function bankView({ data }) {
             "Zip",
             "Number of Accounts",
             "Bank Assets ($)",
-            "Total Assets ($)"
-          ]} data={data}/>
+            "Total Assets ($)",
+          ]}
+          data={data}
+        />
       </main>
     </div>
   );

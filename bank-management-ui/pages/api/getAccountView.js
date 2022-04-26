@@ -1,7 +1,6 @@
 import { connection } from "../../lib/db";
 
 export default function handler(req, res) {
-
   connection.query(
     "SELECT * from display_account_stats;",
     function (error, results, fields) {
@@ -9,5 +8,4 @@ export default function handler(req, res) {
       res.status(200).json(results);
     }
   );
-
 }

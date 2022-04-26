@@ -24,7 +24,17 @@ export default function corporationView({ data }) {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Display Corporation Stats</h1>
-        <MyTable columns={["Corporation ID", "Short Name", "Formal Name", "# Banks", "Corporation Assets ($)", "Total Assets ($)"]} data={data}/>
+        <MyTable
+          columns={[
+            "Corporation ID",
+            "Short Name",
+            "Formal Name",
+            "# Banks",
+            "Corporation Assets ($)",
+            "Total Assets ($)",
+          ]}
+          data={data}
+        />
       </main>
     </div>
   );
