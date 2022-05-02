@@ -1,9 +1,9 @@
 import Head from "next/head";
 import React, { useState, useContext } from "react";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { url } from "../lib/env";
-import AppContext from "../AppContext";
+import styles from "../../styles/Home.module.css";
+import { url } from "../../lib/env";
+import AppContext from "../../AppContext";
 import Link from "next/link";
 
 import {
@@ -31,7 +31,7 @@ export default function payEmployees(props) {
     return null;
   };
 
-  return userData.userRole.includes("e") ? (
+  return userData.userRole.includes("a") || userData.userRole.includes("e") ? (
     <div className={styles.container}>
       <Head>
         <title>Bank Management UI</title>
@@ -55,7 +55,7 @@ export default function payEmployees(props) {
 
         <Grid item xs={2} />
         <Grid item xs={8}>
-          <Link href="/managerMenu">
+          <Link href="/admin/adminMenu">
             <Button fullWidth variant="contained" color="error">
               Back
             </Button>

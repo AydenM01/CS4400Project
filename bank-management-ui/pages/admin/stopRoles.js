@@ -1,9 +1,8 @@
 import Head from "next/head";
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { url } from "../lib/env";
-import AppContext from "../AppContext";
+import styles from "../../styles/Home.module.css";
+import { url } from "../../lib/env";
 import {
   Grid,
   Paper,
@@ -18,37 +17,34 @@ import {
 import Link from "next/link";
 
 export async function getServerSideProps() {
-  const bankIDs = await fetch(url + `/api/getBankIDs`);
-  const bankIDsJSON = await bankIDs.json();
-  const employeeIDs = await fetch(url + `/api/getHireableEmployees`);
+  const employeeIDs = await fetch(url + `/api/getEmployeeIDs`);
   const employeeIDsJSON = await employeeIDs.json();
 
-  let bankInit = bankIDsJSON[0]["bankID"];
+  const customerIDs = await fetch(url + `/api/getCustomerIDs`);
+  const customerIDsJSON = await customerIDs.json();
+
   let employeeInit = employeeIDsJSON[0]["perID"];
+  let customerInit = customerIDsJSON[0]["perID"];
 
   // Pass data to the page via props
   return {
-    props: { bankIDsJSON, bankInit, employeeIDsJSON, employeeInit },
+    props: { employeeIDsJSON, employeeInit, customerIDsJSON, customerInit },
   };
 }
 
-export default function hireWorker(props) {
-  const { userData, setUserData } = useContext(AppContext);
+export default function manageUsers(props) {
   const [employee, setEmployee] = useState(props.employeeInit);
-  const [bank, setBank] = useState(props.bankInit);
-  const [salary, setSalary] = useState(0);
+  const [customer, setCustomer] = useState(props.customerInit);
 
-  const handleHire = async (perID, bankID, salary) => {
-    const rawResponse = await fetch(url + "/api/hireWorker", {
+  const handleStopCustomer = async () => {
+    const rawResponse = await fetch(url + "/api/stopCustomer", {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        perID: perID,
-        bankID: bankID,
-        salary: salary,
+        customer: customer,
       }),
     });
 
@@ -59,7 +55,28 @@ export default function hireWorker(props) {
       alert("Success");
     }
   };
-  return userData.userRole.includes("e") ? (
+
+  const handleStopEmployee = async () => {
+    const rawResponse = await fetch(url + "/api/stopEmployee", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        employee: employee,
+      }),
+    });
+
+    const response = await rawResponse.json();
+    if (rawResponse.status === 400) {
+      alert(response.sqlMessage);
+    } else if (rawResponse.status === 200) {
+      alert("Success");
+    }
+  };
+
+  return (
     <div className={styles.container}>
       <Head>
         <title>Bank Management UI</title>
@@ -69,31 +86,51 @@ export default function hireWorker(props) {
 
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <h1 className={styles.title}>Hire Worker</h1>
+          <h1 className={styles.title}>Stop Customer Role</h1>
         </Grid>
 
         <Grid item xs={2} />
         <Grid item xs={8}>
           <FormControl fullWidth>
-            <InputLabel>Bank</InputLabel>
+            <InputLabel>Customer</InputLabel>
             <Select
-              label="Bank"
-              value={bank}
-              onChange={(e) => setBank(e.target.value)}
+              label="Customer"
+              value={customer}
+              onChange={(e) => setCustomer(e.target.value)}
             >
-              {props.bankIDsJSON.map((obj, i) => {
-                let bankID = obj["bankID"];
+              {props.customerIDsJSON.map((obj, i) => {
+                let perID = obj["perID"];
                 return (
-                  <MenuItem key={i} value={bankID}>
-                    {bankID}
+                  <MenuItem key={i} value={perID}>
+                    {perID}
                   </MenuItem>
                 );
               })}
             </Select>
-          </FormControl>{" "}
+          </FormControl>
         </Grid>
 
         <Grid item xs={2} />
+
+        <Grid item xs={2} />
+
+        <Grid item xs={4}>
+          <Link href={"/admin/manageUsers"}>
+            <Button variant="contained" color="error" fullWidth>
+              Cancel
+            </Button>
+          </Link>
+        </Grid>
+        <Grid item xs={4}>
+          <Button variant="contained" fullWidth onClick={handleStopCustomer}>
+            Confirm
+          </Button>
+        </Grid>
+        <Grid item xs={2} />
+
+        <Grid item xs={12}>
+          <h1 className={styles.title}>Stop Employee Role</h1>
+        </Grid>
 
         <Grid item xs={2} />
         <Grid item xs={8}>
@@ -113,21 +150,7 @@ export default function hireWorker(props) {
                 );
               })}
             </Select>
-          </FormControl>{" "}
-        </Grid>
-
-        <Grid item xs={2} />
-
-        <Grid item xs={2} />
-
-        <Grid item xs={8}>
-          <TextField
-            fullWidth
-            label="Salary"
-            type="number"
-            value={salary}
-            onChange={(e) => setSalary(e.target.value)}
-          />
+          </FormControl>
         </Grid>
 
         <Grid item xs={2} />
@@ -135,25 +158,19 @@ export default function hireWorker(props) {
         <Grid item xs={2} />
 
         <Grid item xs={4}>
-          <Link href="managerMenu">
+          <Link href={"/admin/manageUsers"}>
             <Button variant="contained" color="error" fullWidth>
               Cancel
             </Button>
           </Link>
         </Grid>
         <Grid item xs={4}>
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={() => handleHire(employee, bank, salary)}
-          >
+          <Button variant="contained" fullWidth onClick={handleStopEmployee}>
             Confirm
           </Button>
         </Grid>
         <Grid item xs={2} />
       </Grid>
     </div>
-  ) : (
-    <h1>Not Authorized</h1>
   );
 }

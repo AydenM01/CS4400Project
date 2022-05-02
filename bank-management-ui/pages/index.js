@@ -87,7 +87,7 @@ const Login = () => {
 
         {userData.userRole === "a" && (
           <>
-            <Link href={"/adminMenu"}>
+            <Link href={"/admin/adminMenu"}>
               <a className={styles.card}>
                 <h2>Login as Admin &rarr;</h2>
               </a>
@@ -97,7 +97,7 @@ const Login = () => {
 
         {(userData.userRole === "e" || userData.userRole === "e&c") && (
           <>
-            <Link href={"/managerMenu"}>
+            <Link href={"/manager/managerMenu"}>
               <a className={styles.card}>
                 <h2>Login as Manager &rarr;</h2>
               </a>
@@ -107,7 +107,7 @@ const Login = () => {
 
         {(userData.userRole === "c" || userData.userRole === "e&c") && (
           <>
-            <Link href={"/customerMenu"}>
+            <Link href={"/customer/customerMenu"}>
               <a className={styles.card}>
                 <h2>Login as Customer &rarr;</h2>
               </a>

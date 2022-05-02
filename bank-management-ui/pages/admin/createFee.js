@@ -1,8 +1,8 @@
 import Head from "next/head";
 import React, { useState } from "react";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { url } from "../lib/env";
+import styles from "../../styles/Home.module.css";
+import { url } from "../../lib/env";
 import {
   Grid,
   Paper,
@@ -14,6 +14,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import Link from "next/link";
 
 export async function getServerSideProps() {
   const bankIDs = await fetch(url + `/api/getBankIDs`);
@@ -36,6 +37,28 @@ export default function createFee(props) {
   const [bank, setBank] = useState(props.bankInit);
   const [account, setAccount] = useState(props.accountInit);
   const [feeType, setFeeType] = useState("");
+
+  const handleCreate = async () => {
+    const rawResponse = await fetch(url + "/api/createFee", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        bank: bank,
+        account: account,
+        feeType: feeType,
+      }),
+    });
+
+    const response = await rawResponse.json();
+    if (rawResponse.status === 400) {
+      alert(response.sqlMessage);
+    } else if (rawResponse.status === 200) {
+      alert("Success");
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -113,15 +136,15 @@ export default function createFee(props) {
         <Grid item xs={2} />
 
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
-            {" "}
-            Cancel{" "}
-          </Button>
+          <Link href={"/admin/adminMenu"}>
+            <Button variant="contained" color="error" fullWidth>
+              Cancel
+            </Button>
+          </Link>
         </Grid>
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
-            {" "}
-            Confirm{" "}
+          <Button variant="contained" fullWidth onClick={handleCreate}>
+            Confirm
           </Button>
         </Grid>
         <Grid item xs={2} />

@@ -1,10 +1,11 @@
 import Head from "next/head";
 import React from "react";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { url } from "../lib/env";
-import MyTable from "../components/MyTable";
-import Grid from "@mui/material";
+import styles from "../../styles/Home.module.css";
+import { url } from "../../lib/env";
+import MyTable from "../../components/MyTable";
+import { Button } from "@mui/material";
+import Link from "next/link";
 
 export async function getServerSideProps() {
   const res = await fetch(url + `/api/getEmployeeView`);
@@ -25,6 +26,18 @@ export default function employeeView({ data }) {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Display Employee Stats</h1>
+
+        <Link href="/admin/statsMenu">
+          <Button
+            variant="contained"
+            color="error"
+            fullWidth
+            style={{ marginBottom: 20 }}
+          >
+            Back
+          </Button>
+        </Link>
+
         <MyTable
           columns={[
             "Per ID",

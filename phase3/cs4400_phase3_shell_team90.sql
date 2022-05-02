@@ -64,7 +64,9 @@ sp_main: begin
 	-- if person is admin or employee, not valid
 	if (ip_perID in (select perID from employee)
     or ip_perID in (select perID from system_admin))
-		then leave sp_main;
+		then
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Add Employee Role';
+        leave sp_main;
     end if;
     
     -- if person is not in Person, create Person, User, and Employee
@@ -105,7 +107,9 @@ sp_main: begin
 	-- if person is admin or customer, not valid
 	if (ip_perID in (select perID from customer)
     or ip_perID in (select perID from system_admin))
-		then leave sp_main;
+		then
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Add Customer Role';
+        leave sp_main;
     end if;
     
     -- if person is not in Person, create Person, User, and Customer
@@ -144,7 +148,10 @@ sp_main: begin
 	if (ip_perID not in (select perID from employee)
     or ip_perID in (select manager from bank)
     or 1 in (select num_employees from workFor natural join (select bankID, count(*) as num_employees from workFor group by bankID) as b where perID = ip_perID)
-	) then leave sp_main;
+	)
+    then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Employee Cannot be Removed';
+    leave sp_main;
     end if;
     
     -- if person exists in join customer-employee role, delete employee only
@@ -178,7 +185,9 @@ create procedure stop_customer_role (in ip_perID varchar(100))
 sp_main: begin
 	if (ip_perID not in (select perID from customer)
     or 1 in (select num_accounts from access natural join (select bankID, accountID, count(*) as num_accounts from access group by bankID, accountID) as a where perID = ip_perID)
-	)then leave sp_main;
+	)then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer Cannot be Removed';
+    leave sp_main;
     end if;
     
     -- if person exists in joint customer-employee role, delete customer only
@@ -377,7 +386,9 @@ sp_main: begin
     
     -- if the bank or account does not exist, break
     if not exists (select * from interest_bearing where 
-    bankID = ip_bankID and accountID = ip_accountID) then leave sp_main;
+    bankID = ip_bankID and accountID = ip_accountID) then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Relationship not valid';
+    leave sp_main;
     end if;
     
     insert into interest_bearing_fees(bankID, accountID, fee)

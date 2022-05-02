@@ -1,16 +1,13 @@
 import Head from "next/head";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { url } from "../lib/env";
+import styles from "../../styles/Home.module.css";
+import { url } from "../../lib/env";
 import { TextField, Button } from "@mui/material";
-import { useState, useContext } from "react";
-import AppContext from "../AppContext";
+import { useState } from "react";
 import Link from "next/link";
 
-const ManagerMenu = () => {
-  const { userData, setUserData } = useContext(AppContext);
-  console.log(userData);
-  return userData.userRole.includes("e") ? (
+export default function manageUsers() {
+  return (
     <div className={styles.container}>
       <Head>
         <title>Bank Management UI Home</title>
@@ -19,31 +16,33 @@ const ManagerMenu = () => {
       </Head>
 
       <main className={styles.main}>
-        <h2 className={styles.title}>Manager Menu</h2>
+        <h2 className={styles.title}>Manage Users</h2>
 
         <div className={styles.grid}>
-          <Link href={"/payEmployees"}>
+          <Link href={"/admin/createRoles"}>
             <a className={styles.card}>
-              <h2>Pay Employee &rarr;</h2>
+              <h2>Create Roles &rarr;</h2>
             </a>
           </Link>
 
-          <Link href={"/hireWorker"}>
+          <Link href={"/admin/stopRoles"}>
             <a className={styles.card}>
-              <h2>Hire Worker &rarr;</h2>
+              <h2>Stop Roles &rarr;</h2>
             </a>
           </Link>
-          <Link href={"/"}>
-            <Button fullWidth color="error" variant="contained">
+
+          <Link href="/admin/adminMenu">
+            <Button
+              variant="contained"
+              color="error"
+              fullWidth
+              style={{ marginBottom: 20 }}
+            >
               Back
             </Button>
           </Link>
         </div>
       </main>
     </div>
-  ) : (
-    <h1>Not Authorized</h1>
   );
-};
-
-export default ManagerMenu;
+}

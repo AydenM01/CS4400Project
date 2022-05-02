@@ -1,8 +1,9 @@
 import Head from "next/head";
 import React, { useState } from "react";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { url } from "../lib/env";
+import Link from "next/link";
+import styles from "../../styles/Home.module.css";
+import { url } from "../../lib/env";
 import {
   Grid,
   Paper,
@@ -16,24 +17,25 @@ import {
 } from "@mui/material";
 
 export async function getServerSideProps() {
+  const bankIDs = await fetch(url + `/api/getBankIDs`);
+  const bankIDsJSON = await bankIDs.json();
+
   const employeeIDs = await fetch(url + `/api/getEmployeeIDs`);
   const employeeIDsJSON = await employeeIDs.json();
 
-  const customerIDs = await fetch(url + `/api/getCustomerIDs`);
-  const customerIDsJSON = await customerIDs.json();
-
+  let bankInit = bankIDsJSON[0]["bankID"];
   let employeeInit = employeeIDsJSON[0]["perID"];
-  let customerInit = customerIDsJSON[0]["perID"];
 
   // Pass data to the page via props
   return {
-    props: { employeeIDsJSON, employeeInit, customerIDsJSON, customerInit },
+    props: { bankIDsJSON, bankInit, employeeIDsJSON, employeeInit },
   };
 }
 
-export default function manageUsers(props) {
+export default function replaceManager(props) {
   const [employee, setEmployee] = useState(props.employeeInit);
-  const [customer, setCustomer] = useState(props.customerInit);
+  const [bank, setBank] = useState(props.bankInit);
+  const [newSalary, setNewSalary] = useState(0);
 
   return (
     <div className={styles.container}>
@@ -45,51 +47,31 @@ export default function manageUsers(props) {
 
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <h1 className={styles.title}>Stop Customer Role</h1>
+          <h1 className={styles.title}>Replace Manager</h1>
         </Grid>
 
         <Grid item xs={2} />
         <Grid item xs={8}>
           <FormControl fullWidth>
-            <InputLabel>Customer</InputLabel>
+            <InputLabel>Bank</InputLabel>
             <Select
-              label="Customer"
-              value={customer}
-              onChange={(e) => setCustomer(e.target.value)}
+              label="Bank"
+              value={bank}
+              onChange={(e) => setBank(e.target.value)}
             >
-              {props.customerIDsJSON.map((obj, i) => {
-                let perID = obj["perID"];
+              {props.bankIDsJSON.map((obj, i) => {
+                let bankID = obj["bankID"];
                 return (
-                  <MenuItem key={i} value={perID}>
-                    {perID}
+                  <MenuItem key={i} value={bankID}>
+                    {bankID}
                   </MenuItem>
                 );
               })}
             </Select>
-          </FormControl>{" "}
+          </FormControl>
         </Grid>
 
         <Grid item xs={2} />
-
-        <Grid item xs={2} />
-
-        <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
-            {" "}
-            Cancel{" "}
-          </Button>
-        </Grid>
-        <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
-            {" "}
-            Confirm{" "}
-          </Button>
-        </Grid>
-        <Grid item xs={2} />
-
-        <Grid item xs={12}>
-          <h1 className={styles.title}>Stop Employee Role</h1>
-        </Grid>
 
         <Grid item xs={2} />
         <Grid item xs={8}>
@@ -115,17 +97,31 @@ export default function manageUsers(props) {
         <Grid item xs={2} />
 
         <Grid item xs={2} />
+        <Grid item xs={8}>
+          <TextField
+            type={"number"}
+            label={"New Salary"}
+            value={newSalary}
+            onChange={(e) => {
+              setNewSalary(e.target.value);
+            }}
+            fullWidth
+          ></TextField>
+        </Grid>
+
+        <Grid item xs={2} />
+        <Grid item xs={2} />
 
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
-            {" "}
-            Cancel{" "}
-          </Button>
+          <Link href="/admin/adminMenu">
+            <Button variant="contained" color="error" fullWidth>
+              Cancel
+            </Button>
+          </Link>
         </Grid>
         <Grid item xs={4}>
           <Button variant="contained" fullWidth>
-            {" "}
-            Confirm{" "}
+            Confirm
           </Button>
         </Grid>
         <Grid item xs={2} />

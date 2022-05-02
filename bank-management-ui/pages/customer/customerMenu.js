@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { url } from "../lib/env";
+import styles from "../../styles/Home.module.css";
+import { url } from "../../lib/env";
 import { TextField, Button } from "@mui/material";
 import { useState } from "react";
 import Link from "next/link";
@@ -19,25 +19,31 @@ export default function CustomerMenu() {
         <h2 className={styles.title}>Customer Menu</h2>
 
         <div className={styles.grid}>
-          <Link href={"/manageAccounts"}>
+          <Link href={"/customer/manageAccountsCustomer"}>
             <a className={styles.card}>
               <h2>Manage Accounts &rarr;</h2>
             </a>
           </Link>
 
-          <Link href={"/depositOrWithdrawal"}>
+          <Link href={"/customer/deposit"}>
             <a className={styles.card}>
-              <h2>Deposit / Withdrawal &rarr;</h2>
+              <h2>Deposit &rarr;</h2>
             </a>
           </Link>
 
-          <Link href={"/manageOverdraft"}>
+          <Link href={"/customer/withdraw"}>
+            <a className={styles.card}>
+              <h2>Withdraw &rarr;</h2>
+            </a>
+          </Link>
+
+          <Link href={"/customer/manageOverdraft"}>
             <a className={styles.card}>
               <h2>Manage Overdraft &rarr;</h2>
             </a>
           </Link>
 
-          <Link href={"/makeTransfer"}>
+          <Link href={"/customer/transfer"}>
             <a className={styles.card}>
               <h2>Make Transfer &rarr;</h2>
             </a>

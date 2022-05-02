@@ -64,7 +64,7 @@ export default function createEmployee(props) {
                 );
               })}
             </Select>
-          </FormControl>{" "}
+          </FormControl>
         </Grid>
         <Grid item xs={4}>
           <TextField
@@ -103,14 +103,12 @@ export default function createEmployee(props) {
 
         <Grid item xs={4}>
           <Button variant="contained" fullWidth>
-            {" "}
-            Cancel{" "}
+            Cancel
           </Button>
         </Grid>
         <Grid item xs={4}>
           <Button variant="contained" fullWidth>
-            {" "}
-            Create{" "}
+            Create
           </Button>
         </Grid>
         <Grid item xs={2} />

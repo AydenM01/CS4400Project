@@ -1,9 +1,11 @@
 import Head from "next/head";
 import React from "react";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { url } from "../lib/env";
-import MyTable from "../components/MyTable";
+import styles from "../../styles/Home.module.css";
+import { url } from "../../lib/env";
+import MyTable from "../../components/MyTable";
+import Link from "next/link";
+import { Button } from "@mui/material";
 
 export async function getServerSideProps() {
   const res = await fetch(url + `/api/getCustomerView`);
@@ -24,6 +26,18 @@ export default function customerView({ data }) {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Display Customer Stats</h1>
+
+        <Link href="/admin/statsMenu">
+          <Button
+            variant="contained"
+            color="error"
+            fullWidth
+            style={{ marginBottom: 20 }}
+          >
+            Back
+          </Button>
+        </Link>
+
         <MyTable
           columns={[
             "Customer ID",

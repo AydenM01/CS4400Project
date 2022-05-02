@@ -1,8 +1,9 @@
 import Head from "next/head";
 import React, { useState } from "react";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { url } from "../lib/env";
+import styles from "../../styles/Home.module.css";
+import { url } from "../../lib/env";
+import Link from "next/link";
 import { Grid, Paper, TextField, Button, Typography } from "@mui/material";
 
 export default function createCorporation() {
@@ -25,8 +26,13 @@ export default function createCorporation() {
         resAssets: resAssets,
       }),
     });
+
     const response = await rawResponse.json();
-    console.log(response);
+    if (rawResponse.status === 400) {
+      alert(response.sqlMessage);
+    } else if (rawResponse.status === 200) {
+      alert("Success");
+    }
   };
 
   return (
@@ -82,15 +88,15 @@ export default function createCorporation() {
         <Grid item xs={2} />
         <Grid item xs={2} />
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
-            {" "}
-            Cancel{" "}
-          </Button>
+          <Link href="/admin/adminMenu">
+            <Button variant="contained" color="error" fullWidth>
+              Cancel
+            </Button>
+          </Link>
         </Grid>
         <Grid item xs={4}>
           <Button variant="contained" fullWidth onClick={handleCreate}>
-            {" "}
-            Create{" "}
+            Create
           </Button>
         </Grid>
         <Grid item xs={2} />
