@@ -1,8 +1,9 @@
 import Head from "next/head";
 import React, { useState } from "react";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { url } from "../lib/env";
+import styles from "../../styles/Home.module.css";
+import { url } from "../../lib/env";
+import Link from "next/link";
 import {
   Grid,
   Paper,
@@ -27,11 +28,8 @@ export async function getServerSideProps() {
   };
 }
 
-export default function createEmployee(props) {
+export default function createCustomer(props) {
   const [person, setPerson] = useState(props.personInit);
-  const [salary, setSalary] = useState(0);
-  const [numPayments, setNumPayments] = useState(0);
-  const [accumEarnings, setAccumEarnings] = useState(0);
 
   return (
     <div className={styles.container}>
@@ -43,11 +41,11 @@ export default function createEmployee(props) {
 
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <h1 className={styles.title}>Create Employee</h1>
+          <h1 className={styles.title}>Create Customer Role</h1>
         </Grid>
 
         <Grid item xs={2} />
-        <Grid item xs={4}>
+        <Grid item xs={8}>
           <FormControl fullWidth>
             <InputLabel>Person</InputLabel>
             <Select
@@ -66,45 +64,22 @@ export default function createEmployee(props) {
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={4}>
-          <TextField
-            label="Salary"
-            type="number"
-            fullWidth
-            value={salary}
-            onChange={(e) => setSalary(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={2} />
-
-        <Grid item xs={2} />
-        <Grid item xs={4}>
-          <TextField
-            label="# of Payments"
-            type="number"
-            fullWidth
-            value={numPayments}
-            onChange={(e) => setNumPayments(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={4}>
-          <TextField
-            label="Accumulated Earnings"
-            type="number"
-            fullWidth
-            value={accumEarnings}
-            onChange={(e) => setAccumEarnings(e.target.value)}
-          />
-        </Grid>
 
         <Grid item xs={2} />
 
         <Grid item xs={2} />
 
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
-            Cancel
-          </Button>
+          <Link href="/admin/createRoles">
+            <Button
+              variant="contained"
+              color="error"
+              fullWidth
+              style={{ marginBottom: 20 }}
+            >
+              Back
+            </Button>
+          </Link>
         </Grid>
         <Grid item xs={4}>
           <Button variant="contained" fullWidth>

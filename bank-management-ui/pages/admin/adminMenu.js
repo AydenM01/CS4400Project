@@ -73,6 +73,12 @@ export default function AdminMenu() {
             </a>
           </Link>
 
+          <Link href={"/admin/createBank"}>
+            <a className={styles.card}>
+              <h2>Create Bank &rarr;</h2>
+            </a>
+          </Link>
+
           <Link href="/">
             <Button
               variant="contained"

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import styles from "../../styles/Home.module.css";
 import { url } from "../../lib/env";
+import Link from "next/link";
 import {
   Grid,
   Paper,
@@ -238,15 +239,15 @@ export default function createBank(props) {
         <Grid item xs={2} />
 
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
-            {" "}
-            Cancel{" "}
-          </Button>
+          <Link href="/admin/adminMenu">
+            <Button variant="contained" color="error" fullWidth>
+              Cancel
+            </Button>
+          </Link>
         </Grid>
         <Grid item xs={4}>
           <Button variant="contained" fullWidth onClick={handleCreate}>
-            {" "}
-            Create{" "}
+            Create
           </Button>
         </Grid>
         <Grid item xs={2} />
