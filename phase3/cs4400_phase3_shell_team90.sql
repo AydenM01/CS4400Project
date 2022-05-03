@@ -70,7 +70,8 @@ create procedure start_employee_role (in ip_perID varchar(100), in ip_taxID char
 sp_main: begin
 	-- if person is admin or employee, not valid
 	if (ip_perID in (select perID from employee)
-    or ip_perID in (select perID from system_admin))
+    or ip_perID in (select perID from system_admin)
+    or ip_salary < 0 or ip_payments < 0 or ip_earned < 0)
 		then
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Add Employee Role';
         leave sp_main;
@@ -426,20 +427,23 @@ sp_main: begin
 	-- Implement your code here NOTE: changed begin to sp_main: begin
 
 	-- if the accounts for checking bank and savings bank don't exist, break
-    if (not exists (select * from bank_account where 
+    if ((not exists (select * from bank_account where 
     bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
     not exists (select * from bank_account where 
-    bankID = ip_savings_bankID and accountID = ip_savings_accountID))
+    bankID = ip_savings_bankID and accountID = ip_savings_accountID)) and
+    not exists (select * from system_admin where perID = ip_requester))
     then
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
     leave sp_main;
     end if;
     
     -- if the requester doesn't have access to both the accounts, break
-    if (not exists (select * from access where
+    if ((not exists (select * from access where
     perID = ip_requester and bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
     not exists (select * from access where
-    perID = ip_requester and bankID = ip_savings_bankID and accountID = ip_savings_accountID)) then
+    perID = ip_requester and bankID = ip_savings_bankID and accountID = ip_savings_accountID) or
+    not exists (select * from system_admin where perID = ip_requester)) and 
+    not exists (select * from system_admin where perID = ip_requester)) then
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
     leave sp_main;
     end if;
@@ -475,10 +479,11 @@ create procedure stop_overdraft (in ip_requester varchar(100),
 	in ip_checking_bankID varchar(100), in ip_checking_accountID varchar(100))
 sp_main: begin
     -- if the account doesn't exist or doesnt have access to checking or savings, break
-    if ((ip_checking_bankID, ip_checking_accountID) not in (select bankID, accountID from bank_account)
+    if (((ip_checking_bankID, ip_checking_accountID) not in (select bankID, accountID from bank_account)
 		or ip_requester not in (select perID from access natural join checking where bankID = ip_checking_bankID and accountID = ip_checking_accountID)
         or ip_requester not in (select perID from access a natural join (select perID, protectionBank, protectionAccount from access natural join checking where bankID = ip_checking_bankID and accountID = ip_checking_accountID) as b
-		where a.perID = b.perID and a.accountID = b.protectionAccount and a.bankID = b.protectionBank)
+		where a.perID = b.perID and a.accountID = b.protectionAccount and a.bankID = b.protectionBank))
+        and not exists (select * from system_admin where perID = ip_requester)
 	) then 
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Stop Overdraft';
     leave
