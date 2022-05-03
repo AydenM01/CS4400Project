@@ -58,6 +58,11 @@ export default function deposit(props) {
       return;
     }
 
+    if (toAccount === fromAccount) {
+      alert("Cannot Transfer to Same Account");
+      return;
+    }
+
     let account_parsed = fromAccount.split(" / ");
     let toAccount_parsed = toAccount.split(" / ");
     const rawResponse = await fetch(url + "/api/customer/transfer", {
