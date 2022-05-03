@@ -1,9 +1,15 @@
 import "../styles/globals.css";
 import AppContext from "../AppContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+let id_track = "";
 
 function MyApp({ Component, pageProps }) {
   const [userData, setUserData] = useState({ userID: "", userRole: "" });
+
+  useEffect(() => {
+    id_track = userData.userID;
+  }, [userData]);
 
   return (
     <AppContext.Provider
@@ -18,3 +24,4 @@ function MyApp({ Component, pageProps }) {
 }
 
 export default MyApp;
+export { id_track };

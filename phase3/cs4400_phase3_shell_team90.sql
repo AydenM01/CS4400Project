@@ -308,17 +308,25 @@ sp_main: begin
 		end;
 	else
 		begin
-			-- if the requester is not an admin, break
-			if not exists (select * from system_admin where
-            perID = ip_requester) then leave sp_main;
-            end if;
-            -- if the customer adding access does not have access already, break
-            if not exists (select * from access where
-            perID = ip_customer and bankID = ip_bankID and accountID = ip_accountID) then leave sp_main;
+			-- if the requester is not an admin or doesnt have access, break
+			if not exists (select perID from system_admin where
+            perID = ip_requester union select perID from access where
+            perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID)
+            then
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Requester Doesnt Have Access';
+            leave sp_main;
             end if;
             -- if the customer being added does not exist, break
             if not exists (select * from customer where
-            perID = ip_customer) then leave sp_main;
+            perID = ip_customer) then
+            leave sp_main;
+            end if;
+            
+            -- if the customer being added already has access, break
+            if exists (select * from access where
+            perID = ip_customer and accountID = ip_accountID and bankID = ip_bankID) then
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer already has access';
+            leave sp_main;
             end if;
 		end;
 	end if;
@@ -349,7 +357,15 @@ sp_main: begin
     -- if the person removing access is not an admin or has access
     if ip_requester not in (select perID from system_admin union
         select perID from access where bankID = ip_bankID and accountID = ip_accountID)
-		then leave sp_main;
+		then
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Owner Cannot be Removed';
+        leave sp_main;
+    end if;
+    
+     if ip_sharer not in (select perID from access where bankID = ip_bankID and accountID = ip_accountID)
+		then
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Person Already Does Not Have Access';
+        leave sp_main;
     end if;
     
     -- if the person being removed doesn't already have access, break
@@ -499,7 +515,9 @@ sp_main: begin
     if (ip_requester not in
     (select perID from access where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID)
     or (ip_withdrawal_amount <= 0) or ip_withdrawal_amount is NULL) 
-    then leave sp_main; 
+    then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Make Withdrawal';
+    leave sp_main; 
     end if;
 
     -- updating if savings account
@@ -558,6 +576,8 @@ sp_main: begin
         leave sp_main;
     end;
     end if;
+    
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Make Withdrawal';
 
 end //
 delimiter ;

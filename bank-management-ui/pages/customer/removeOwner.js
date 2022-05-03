@@ -18,7 +18,7 @@ import {
   MenuItem,
 } from "@mui/material";
 
-export default function deposit(props) {
+export default function removeOwner(props) {
   const [person, setPerson] = useState("");
   const [accounts, setAccounts] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -49,16 +49,16 @@ export default function deposit(props) {
     );
     const accountIDsJSON = await accountIDs.json();
     setAccounts(accountIDsJSON);
+
+    const customerIDs = await fetch(url + "/api/getCustomerIDs");
+    const customerIDsJSON = await customerIDs.json();
+    setCustomers(customerIDsJSON);
   };
 
-  const handleDeposit = async () => {
-    if (salary <= 0) {
-      alert("Cannot Deposit Negative or 0");
-      return;
-    }
-
+  const handleRemove = async () => {
     let account_parsed = account.split(" / ");
-    const rawResponse = await fetch(url + "/api/customer/makeDeposit", {
+    console.log(account_parsed);
+    const rawResponse = await fetch(url + "/api/customer/removeOwner", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -66,7 +66,7 @@ export default function deposit(props) {
       },
       body: JSON.stringify({
         requester: userData.userID,
-        amount: salary,
+        sharer: customer,
         bankID: account_parsed[1],
         accountID: account_parsed[0],
       }),
@@ -74,7 +74,6 @@ export default function deposit(props) {
 
     const response = await rawResponse.json();
     if (rawResponse.status === 400) {
-      console.log(response.sqlMessage);
       alert(response.sqlMessage);
     } else if (rawResponse.status === 200) {
       alert("Success");
@@ -91,7 +90,7 @@ export default function deposit(props) {
 
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <h1 className={styles.title}>Deposit</h1>
+          <h1 className={styles.title}>Remove Owner</h1>
         </Grid>
 
         <Grid item xs={2} />
@@ -118,23 +117,35 @@ export default function deposit(props) {
           )}
         </Grid>
         <Grid item xs={2} />
-
         <Grid item xs={2} />
         <Grid item xs={8}>
-          <TextField
-            label="Amount"
-            type="number"
-            fullWidth
-            value={salary}
-            onChange={(e) => setSalary(e.target.value)}
-          />
+          {customers && (
+            <FormControl fullWidth>
+              <InputLabel>Customer</InputLabel>
+              <Select
+                label="Customer"
+                value={customer}
+                onChange={(e) => setCustomer(e.target.value)}
+              >
+                {customers.map((obj, i) => {
+                  let perID = obj["perID"];
+                  return (
+                    <MenuItem key={i} value={perID}>
+                      {perID}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          )}
         </Grid>
+
         <Grid item xs={2} />
 
         <Grid item xs={2} />
 
         <Grid item xs={4}>
-          <Link href="/customer/customerMenu">
+          <Link href="/customer/manageAccountsCustomer">
             <Button fullWidth variant="contained" color="error">
               Cancel
             </Button>
@@ -142,7 +153,7 @@ export default function deposit(props) {
         </Grid>
 
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth onClick={handleDeposit}>
+          <Button variant="contained" fullWidth onClick={handleRemove}>
             Create
           </Button>
         </Grid>
