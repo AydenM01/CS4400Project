@@ -64,7 +64,9 @@ sp_main: begin
 	-- if person is admin or employee, not valid
 	if (ip_perID in (select perID from employee)
     or ip_perID in (select perID from system_admin))
-		then leave sp_main;
+		then
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Add Employee Role';
+        leave sp_main;
     end if;
     
     -- if person is not in Person, create Person, User, and Employee
@@ -105,7 +107,9 @@ sp_main: begin
 	-- if person is admin or customer, not valid
 	if (ip_perID in (select perID from customer)
     or ip_perID in (select perID from system_admin))
-		then leave sp_main;
+		then
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Add Customer Role';
+        leave sp_main;
     end if;
     
     -- if person is not in Person, create Person, User, and Customer
@@ -144,7 +148,10 @@ sp_main: begin
 	if (ip_perID not in (select perID from employee)
     or ip_perID in (select manager from bank)
     or 1 in (select num_employees from workFor natural join (select bankID, count(*) as num_employees from workFor group by bankID) as b where perID = ip_perID)
-	) then leave sp_main;
+	)
+    then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Employee Cannot be Removed';
+    leave sp_main;
     end if;
     
     -- if person exists in join customer-employee role, delete employee only
@@ -178,7 +185,9 @@ create procedure stop_customer_role (in ip_perID varchar(100))
 sp_main: begin
 	if (ip_perID not in (select perID from customer)
     or 1 in (select num_accounts from access natural join (select bankID, accountID, count(*) as num_accounts from access group by bankID, accountID) as a where perID = ip_perID)
-	)then leave sp_main;
+	)then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer Cannot be Removed';
+    leave sp_main;
     end if;
     
     -- if person exists in joint customer-employee role, delete customer only
@@ -299,17 +308,25 @@ sp_main: begin
 		end;
 	else
 		begin
-			-- if the requester is not an admin, break
-			if not exists (select * from system_admin where
-            perID = ip_requester) then leave sp_main;
-            end if;
-            -- if the customer adding access does not have access already, break
-            if not exists (select * from access where
-            perID = ip_customer and bankID = ip_bankID and accountID = ip_accountID) then leave sp_main;
+			-- if the requester is not an admin or doesnt have access, break
+			if not exists (select perID from system_admin where
+            perID = ip_requester union select perID from access where
+            perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID)
+            then
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Requester Doesnt Have Access';
+            leave sp_main;
             end if;
             -- if the customer being added does not exist, break
             if not exists (select * from customer where
-            perID = ip_customer) then leave sp_main;
+            perID = ip_customer) then
+            leave sp_main;
+            end if;
+            
+            -- if the customer being added already has access, break
+            if exists (select * from access where
+            perID = ip_customer and accountID = ip_accountID and bankID = ip_bankID) then
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer already has access';
+            leave sp_main;
             end if;
 		end;
 	end if;
@@ -340,7 +357,15 @@ sp_main: begin
     -- if the person removing access is not an admin or has access
     if ip_requester not in (select perID from system_admin union
         select perID from access where bankID = ip_bankID and accountID = ip_accountID)
-		then leave sp_main;
+		then
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Owner Cannot be Removed';
+        leave sp_main;
+    end if;
+    
+     if ip_sharer not in (select perID from access where bankID = ip_bankID and accountID = ip_accountID)
+		then
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Person Already Does Not Have Access';
+        leave sp_main;
     end if;
     
     -- if the person being removed doesn't already have access, break
@@ -377,7 +402,9 @@ sp_main: begin
     
     -- if the bank or account does not exist, break
     if not exists (select * from interest_bearing where 
-    bankID = ip_bankID and accountID = ip_accountID) then leave sp_main;
+    bankID = ip_bankID and accountID = ip_accountID) then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Relationship not valid';
+    leave sp_main;
     end if;
     
     insert into interest_bearing_fees(bankID, accountID, fee)
@@ -399,26 +426,35 @@ sp_main: begin
     if (not exists (select * from bank_account where 
     bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
     not exists (select * from bank_account where 
-    bankID = ip_savings_bankID and accountID = ip_savings_accountID)) then leave sp_main;
+    bankID = ip_savings_bankID and accountID = ip_savings_accountID))
+    then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    leave sp_main;
     end if;
     
     -- if the requester doesn't have access to both the accounts, break
     if (not exists (select * from access where
     perID = ip_requester and bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
     not exists (select * from access where
-    perID = ip_requester and bankID = ip_savings_bankID and accountID = ip_savings_accountID)) then leave sp_main;
+    perID = ip_requester and bankID = ip_savings_bankID and accountID = ip_savings_accountID)) then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    leave sp_main;
     end if;
     
     -- maybe not necessary, could be handled below by update
     -- if the checking account alreadt has an overdraft savings account, break
     if (exists (select * from checking where 
     not (protectionBank = null) and not (protectionAccount = null) and
-    bankID = ip_checking_bankID and accountID = ip_checking_accountID)) then leave sp_main;
+    bankID = ip_checking_bankID and accountID = ip_checking_accountID)) then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    leave sp_main;
     end if;
     
     -- if the savings account is already protecting another checking, break
     if (exists (select * from checking where 
-    protectionBank = ip_savings_bankID and protectionAccount = ip_savings_accountID)) then leave sp_main;
+    protectionBank = ip_savings_bankID and protectionAccount = ip_savings_accountID)) then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    leave sp_main;
     end if;
     
     -- update the checking accounts overdraft info
@@ -440,7 +476,10 @@ sp_main: begin
 		or ip_requester not in (select perID from access natural join checking where bankID = ip_checking_bankID and accountID = ip_checking_accountID)
         or ip_requester not in (select perID from access a natural join (select perID, protectionBank, protectionAccount from access natural join checking where bankID = ip_checking_bankID and accountID = ip_checking_accountID) as b
 		where a.perID = b.perID and a.accountID = b.protectionAccount and a.bankID = b.protectionBank)
-	) then leave sp_main;
+	) then 
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Stop Overdraft';
+    leave
+    sp_main;
     end if;
     
     update checking set protectionBank = null, protectionAccount = null
@@ -488,7 +527,9 @@ sp_main: begin
     if (ip_requester not in
     (select perID from access where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID)
     or (ip_withdrawal_amount <= 0) or ip_withdrawal_amount is NULL) 
-    then leave sp_main; 
+    then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Make Withdrawal';
+    leave sp_main; 
     end if;
 
     -- updating if savings account
@@ -547,6 +588,8 @@ sp_main: begin
         leave sp_main;
     end;
     end if;
+    
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Make Withdrawal';
 
 end //
 delimiter ;
@@ -567,7 +610,9 @@ sp_main: begin
     or (ip_requester not in
     (select perID from access where perID = ip_requester and bankID = ip_to_bankID and accountID = ip_to_accountID))
     or (ip_transfer_amount <= 0) or ip_transfer_amount is NULL) 
-    then leave sp_main;
+    then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Make Transfer';
+    leave sp_main;
     end if;
     
     
