@@ -16,7 +16,7 @@ export default function handler(req, res) {
   }
 
   connection.query(
-    "call start_employee_role(" + person + ");",
+    "call start_employee_role(" + person + ",null,null,null,null,null,null,null,null,null," + salary + "," + numPayments + "," + accumEarnings + ", null);",
     function (error, results, fields) {
       console.log(results);
       if (error) res.status(400).json(error);
