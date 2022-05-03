@@ -337,24 +337,41 @@ create procedure remove_account_access (in ip_requester varchar(100), in ip_shar
 	in ip_bankID varchar(100), in ip_accountID varchar(100))
 sp_main: begin
 	-- Implement your code here
+<<<<<<< HEAD
     -- if the person removing access is not an admin or doesn't have access
     if (not exists (select * from system_admin where perID = ip_requester)) and 
     (not exists (select * from access where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID)) then leave sp_main;
     end if;
+=======
+    -- if the person removing access is not an admin or has access
+    if ip_requester not in (select perID from system_admin union
+        select perID from access where bankID = ip_bankID and accountID = ip_accountID)
+		then leave sp_main;
+    end if;
+    
+>>>>>>> b148b997cb55de32b0d49e58b682deae0127d6db
     -- if the person being removed doesn't already have access, break
     -- if not exists (select * from access where
     -- perID = ip_sharer and bankID = ip_bankID and accountID = ip_accountID) then leave sp_main;
 	-- end if;
     
+<<<<<<< HEAD
     delete from access where perID = ip_requester and bankID = ip_bankID and accountID = ip_accountID;
     -- update checking set protectionBank = null, protectionAccount = null where protectionBank = ip_bankID and protectionAccount = ip_accountID;
+=======
+    delete from access where perID = ip_sharer and bankID = ip_bankID and accountID = ip_accountID;
+>>>>>>> b148b997cb55de32b0d49e58b682deae0127d6db
     
     -- if the person being removed is the last person with access to the account, remove access and close account
     if not exists (select * from access where
     bankID = ip_bankID and accountID = ip_accountID)
 		then begin
 			delete from checking where bankID = ip_bankID and accountID = ip_accountID;
+<<<<<<< HEAD
             update checking set protectionBank = null, protectionAccount = null where protectionBank = ip_bankID and protectionAccount = ip_accountID;
+=======
+            update checking set protectionBank = null, protectionAccount = null where protectionBank = ip_bankID and protectionAccount = ip_sharer;
+>>>>>>> b148b997cb55de32b0d49e58b682deae0127d6db
             delete from savings where bankID = ip_bankID and accountID = ip_accountID;
             delete from market where bankID = ip_bankID and accountID = ip_accountID;
             delete from interest_bearing_fees where bankID = ip_bankID and accountID = ip_accountID;
@@ -434,6 +451,7 @@ delimiter //
 create procedure stop_overdraft (in ip_requester varchar(100),
 	in ip_checking_bankID varchar(100), in ip_checking_accountID varchar(100))
 sp_main: begin
+<<<<<<< HEAD
 	-- Implement your code here
     
     -- if the account doesn't exist, break
@@ -446,10 +464,18 @@ sp_main: begin
     perID = ip_requester and bankID = ip_checking_bankID and accountID = ip_checking_accountID))
     or (not exists (select * from access, checking where
 	perID = ip_requester and access.bankID = checking.protectionBank and access.accountID = checking.protectionAccount)) then leave sp_main;
+=======
+    -- if the account doesn't exist or doesnt have access to checking or savings, break
+    if ((ip_checking_bankID, ip_checking_accountID) not in (select bankID, accountID from bank_account)
+		or ip_requester not in (select perID from access natural join checking where bankID = ip_checking_bankID and accountID = ip_checking_accountID)
+        or ip_requester not in (select perID from access a natural join (select perID, protectionBank, protectionAccount from access natural join checking where bankID = ip_checking_bankID and accountID = ip_checking_accountID) as b
+		where a.perID = b.perID and a.accountID = b.protectionAccount and a.bankID = b.protectionBank)
+	) then leave sp_main;
+>>>>>>> b148b997cb55de32b0d49e58b682deae0127d6db
     end if;
     
     update checking set protectionBank = null, protectionAccount = null
-    where bankID = ip_checking_bankID and accountID = ip_checking_accountID;
+	where bankID = ip_checking_bankID and accountID = ip_checking_accountID;
     
 end //
 delimiter ;
