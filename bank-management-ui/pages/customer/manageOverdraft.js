@@ -16,11 +16,15 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Checkbox,
+  FormGroup,
+  FormControlLabel,
 } from "@mui/material";
 
 export default function deposit(props) {
   const [person, setPerson] = useState("");
-  const [accounts, setAccounts] = useState([]);
+  const [checkingAccounts, setCheckingAccounts] = useState([]);
+  const [savingsAccounts, setSavingsAccounts] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [fromAccount, setFromAccount] = useState("");
   const [toAccount, setToAccount] = useState("");
@@ -29,14 +33,19 @@ export default function deposit(props) {
   const [numPayments, setNumPayments] = useState(0);
   const [accumEarnings, setAccumEarnings] = useState(0);
   const { userData, setUserData } = useContext(AppContext);
+  const [checked, setChecked] = useState(true);
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  const handleCheck = (event) => {
+    setChecked(event.target.checked);
+  };
+
   const fetchData = async () => {
-    const accountIDs = await fetch(
-      url + `/api/customer/getAccessibleAccounts`,
+    const checkingAccountIDs = await fetch(
+      url + `/api/customer/getAccessibleChecking`,
       {
         method: "POST",
         headers: {
@@ -48,19 +57,30 @@ export default function deposit(props) {
         }),
       }
     );
-    const accountIDsJSON = await accountIDs.json();
-    setAccounts(accountIDsJSON);
+    const checkingAccountIDsJSON = await checkingAccountIDs.json();
+    setCheckingAccounts(checkingAccountIDsJSON);
+
+    const savingsAccountIDs = await fetch(
+      url + `/api/customer/getAccessibleSavings`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customer: userData.userID,
+        }),
+      }
+    );
+    const savingsAccountIDsJSON = await savingsAccountIDs.json();
+    setSavingsAccounts(savingsAccountIDsJSON);
   };
 
-  const handleDeposit = async () => {
-    if (salary <= 0) {
-      alert("Cannot Transfer Negative or 0");
-      return;
-    }
-
+  const addOverdraft = async () => {
     let account_parsed = fromAccount.split(" / ");
     let toAccount_parsed = toAccount.split(" / ");
-    const rawResponse = await fetch(url + "/api/customer/transfer", {
+    const rawResponse = await fetch(url + "/api/customer/startOverdraft", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -68,7 +88,6 @@ export default function deposit(props) {
       },
       body: JSON.stringify({
         requester: userData.userID,
-        amount: salary,
         bankID: account_parsed[1],
         accountID: account_parsed[0],
         toBankID: toAccount_parsed[1],
@@ -78,10 +97,40 @@ export default function deposit(props) {
 
     const response = await rawResponse.json();
     if (rawResponse.status === 400) {
-      console.log(response.sqlMessage);
       alert(response.sqlMessage);
     } else if (rawResponse.status === 200) {
       alert("Success");
+    }
+  };
+
+  const removeOverdraft = async () => {
+    let account_parsed = fromAccount.split(" / ");
+    const rawResponse = await fetch(url + "/api/customer/stopOverdraft", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        requester: userData.userID,
+        bankID: account_parsed[1],
+        accountID: account_parsed[0],
+      }),
+    });
+
+    const response = await rawResponse.json();
+    if (rawResponse.status === 400) {
+      alert(response.sqlMessage);
+    } else if (rawResponse.status === 200) {
+      alert("Success");
+    }
+  };
+
+  const handleOverdraft = async () => {
+    if (checked) {
+      addOverdraft();
+    } else {
+      removeOverdraft();
     }
   };
 
@@ -95,20 +144,20 @@ export default function deposit(props) {
 
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <h1 className={styles.title}>Transfer</h1>
+          <h1 className={styles.title}>Manage Overdraft Policies</h1>
         </Grid>
 
         <Grid item xs={2} />
         <Grid item xs={8}>
-          {accounts && (
+          {checkingAccounts && (
             <FormControl fullWidth>
-              <InputLabel>From Account</InputLabel>
+              <InputLabel>Checking Account</InputLabel>
               <Select
                 label="Account"
                 value={fromAccount}
                 onChange={(e) => setFromAccount(e.target.value)}
               >
-                {accounts.map((obj, i) => {
+                {checkingAccounts.map((obj, i) => {
                   let acctID = obj["accountID"];
                   let bankID = obj["bankID"];
                   return (
@@ -125,27 +174,26 @@ export default function deposit(props) {
 
         <Grid item xs={2} />
         <Grid item xs={8}>
-          <TextField
-            label="Amount"
-            type="number"
-            fullWidth
-            value={salary}
-            onChange={(e) => setSalary(e.target.value)}
-          />
+          <FormGroup>
+            <FormControlLabel
+              control={<Checkbox checked={checked} onChange={handleCheck} />}
+              label="Adding Overdraft Policy?"
+            />
+          </FormGroup>
         </Grid>
         <Grid item xs={2} />
 
         <Grid item xs={2} />
         <Grid item xs={8}>
-          {accounts && (
+          {savingsAccounts && checked && (
             <FormControl fullWidth>
-              <InputLabel>To Account</InputLabel>
+              <InputLabel>Savings Account</InputLabel>
               <Select
                 label="Account"
                 value={toAccount}
                 onChange={(e) => setToAccount(e.target.value)}
               >
-                {accounts.map((obj, i) => {
+                {savingsAccounts.map((obj, i) => {
                   let acctID = obj["accountID"];
                   let bankID = obj["bankID"];
                   return (
@@ -171,7 +219,7 @@ export default function deposit(props) {
         </Grid>
 
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth onClick={handleDeposit}>
+          <Button variant="contained" fullWidth onClick={handleOverdraft}>
             Create
           </Button>
         </Grid>

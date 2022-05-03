@@ -426,26 +426,35 @@ sp_main: begin
     if (not exists (select * from bank_account where 
     bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
     not exists (select * from bank_account where 
-    bankID = ip_savings_bankID and accountID = ip_savings_accountID)) then leave sp_main;
+    bankID = ip_savings_bankID and accountID = ip_savings_accountID))
+    then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    leave sp_main;
     end if;
     
     -- if the requester doesn't have access to both the accounts, break
     if (not exists (select * from access where
     perID = ip_requester and bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
     not exists (select * from access where
-    perID = ip_requester and bankID = ip_savings_bankID and accountID = ip_savings_accountID)) then leave sp_main;
+    perID = ip_requester and bankID = ip_savings_bankID and accountID = ip_savings_accountID)) then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    leave sp_main;
     end if;
     
     -- maybe not necessary, could be handled below by update
     -- if the checking account alreadt has an overdraft savings account, break
     if (exists (select * from checking where 
     not (protectionBank = null) and not (protectionAccount = null) and
-    bankID = ip_checking_bankID and accountID = ip_checking_accountID)) then leave sp_main;
+    bankID = ip_checking_bankID and accountID = ip_checking_accountID)) then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    leave sp_main;
     end if;
     
     -- if the savings account is already protecting another checking, break
     if (exists (select * from checking where 
-    protectionBank = ip_savings_bankID and protectionAccount = ip_savings_accountID)) then leave sp_main;
+    protectionBank = ip_savings_bankID and protectionAccount = ip_savings_accountID)) then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    leave sp_main;
     end if;
     
     -- update the checking accounts overdraft info
@@ -467,7 +476,10 @@ sp_main: begin
 		or ip_requester not in (select perID from access natural join checking where bankID = ip_checking_bankID and accountID = ip_checking_accountID)
         or ip_requester not in (select perID from access a natural join (select perID, protectionBank, protectionAccount from access natural join checking where bankID = ip_checking_bankID and accountID = ip_checking_accountID) as b
 		where a.perID = b.perID and a.accountID = b.protectionAccount and a.bankID = b.protectionBank)
-	) then leave sp_main;
+	) then 
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Stop Overdraft';
+    leave
+    sp_main;
     end if;
     
     update checking set protectionBank = null, protectionAccount = null
@@ -598,7 +610,9 @@ sp_main: begin
     or (ip_requester not in
     (select perID from access where perID = ip_requester and bankID = ip_to_bankID and accountID = ip_to_accountID))
     or (ip_transfer_amount <= 0) or ip_transfer_amount is NULL) 
-    then leave sp_main;
+    then
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Make Transfer';
+    leave sp_main;
     end if;
     
     
