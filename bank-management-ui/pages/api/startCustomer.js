@@ -1,16 +1,16 @@
 import { connection } from "../../lib/db";
 
 export default function handler(req, res) {
-  let customer = null;
+  let person = null;
 
   if (req.method === "POST") {
-    req.body.customer
-      ? (customer = '"' + req.body.customer + '"')
-      : (customer = null);
+    req.body.person
+      ? (person = '"' + req.body.person + '"')
+      : (person = null);
   }
 
   connection.query(
-    "call start_customer_role(" + customer + ");",
+    "call start_customer_role(" + person + ",null, null, null, null, null, null, null, null, null, null);",
     function (error, results, fields) {
       console.log(results);
       if (error) res.status(400).json(error);

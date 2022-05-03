@@ -332,10 +332,6 @@ sp_main: begin
 	end if;
     
 	insert into access values (ip_customer, ip_bankID, ip_accountID, ip_dtShareStart, null);
-    
-    
-    
-            
 end //
 delimiter ;
 

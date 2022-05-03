@@ -28,34 +28,11 @@ export async function getServerSideProps() {
   };
 }
 
-export default function createEmployee(props) {
+export default function createAccount(props) {
   const [person, setPerson] = useState(props.personInit);
   const [salary, setSalary] = useState(0);
   const [numPayments, setNumPayments] = useState(0);
   const [accumEarnings, setAccumEarnings] = useState(0);
-
-  const handleCreate = async () => {
-    const rawResponse = await fetch(url + "/api/startEmployee", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        person: person,
-        salary: salary,
-        numPayments: numPayments,
-        accumEarnings: accumEarnings
-      }),
-    });
-
-    const response = await rawResponse.json();
-    if (rawResponse.status === 400) {
-      alert(response.sqlMessage);
-    } else if (rawResponse.status === 200) {
-      alert("Success");
-    }
-  };
 
   return (
     <div className={styles.container}>
@@ -67,7 +44,7 @@ export default function createEmployee(props) {
 
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <h1 className={styles.title}>Create Employee</h1>
+          <h1 className={styles.title}>Create Account</h1>
         </Grid>
 
         <Grid item xs={2} />
@@ -126,7 +103,7 @@ export default function createEmployee(props) {
         <Grid item xs={2} />
 
         <Grid item xs={4}>
-          <Link href="/admin/createRoles">
+          <Link href="/admin/manageAccountsAdmin">
             <Button
               variant="contained"
               color="error"
@@ -138,7 +115,7 @@ export default function createEmployee(props) {
           </Link>
         </Grid>
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth onClick={handleCreate}>
+          <Button variant="contained" fullWidth>
             Create
           </Button>
         </Grid>

@@ -31,6 +31,26 @@ export async function getServerSideProps() {
 export default function createCustomer(props) {
   const [person, setPerson] = useState(props.personInit);
 
+  const handleCreate = async () => {
+    const rawResponse = await fetch(url + "/api/startCustomer", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        person: person,
+      }),
+    });
+
+    const response = await rawResponse.json();
+    if (rawResponse.status === 400) {
+      alert(response.sqlMessage);
+    } else if (rawResponse.status === 200) {
+      alert("Success");
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -82,7 +102,7 @@ export default function createCustomer(props) {
           </Link>
         </Grid>
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
+          <Button variant="contained" fullWidth onClick={handleCreate}>
             Create
           </Button>
         </Grid>
