@@ -16,6 +16,9 @@ export async function getServerSideProps() {
 }
 
 export default function customerView({ data }) {
+  for (let index = 0; index < data.length; index++) {
+    data[index].id = index;
+  }
   return (
     <div className={styles.container}>
       <Head>
@@ -27,34 +30,72 @@ export default function customerView({ data }) {
       <main className={styles.main}>
         <h1 className={styles.title}>Display Customer Stats</h1>
 
-        <Link href="/admin/statsMenu">
-          <Button
-            variant="contained"
-            color="error"
-            fullWidth
-            style={{ marginBottom: 20 }}
-          >
-            Back
-          </Button>
-        </Link>
-
         <MyTable
           columns={[
-            "Customer ID",
-            "Tax ID",
-            "Customer Name",
-            "Date of Birth",
-            "Joined Date",
-            "Street",
-            "City",
-            "State",
-            "Zip",
-            "Number of Accounts",
-            "Customer Assets ($)",
+            {
+              field: "person_identifier",
+              headerName: "Customer ID",
+              width: 150,
+            },
+            { field: "tax_identifier", headerName: "Tax ID", width: 150 },
+            { field: "customer_name", headerName: "Customer Name", width: 300 },
+            {
+              field: "date_of_birth",
+              headerName: "Date of Birth",
+              width: 150,
+            },
+            {
+              field: "joined_system",
+              headerName: "Joined Date",
+              width: 150,
+            },
+            {
+              field: "street",
+              headerName: "Street",
+              width: 200,
+            },
+            {
+              field: "city",
+              headerName: "City",
+              width: 100,
+            },
+            {
+              field: "state",
+              headerName: "State",
+              width: 100,
+            },
+            {
+              field: "zip",
+              headerName: "Zip",
+              width: 100,
+            },
+            {
+              field: "number_of_accounts",
+              headerName: "Number of Accounts",
+              type: "number",
+              width: 150,
+            },
+            {
+              field: "customer_assets",
+              headerName: "Customer Assets ($)",
+              type: "number",
+              width: 200,
+            },
           ]}
           data={data}
         />
       </main>
+
+      <Link href="/admin/statsMenu">
+        <Button
+          variant="contained"
+          color="error"
+          fullWidth
+          style={{ marginBottom: 20 }}
+        >
+          Back
+        </Button>
+      </Link>
     </div>
   );
 }

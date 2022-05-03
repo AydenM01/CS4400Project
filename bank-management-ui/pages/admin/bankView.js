@@ -15,6 +15,9 @@ export async function getServerSideProps() {
 }
 
 export default function bankView({ data }) {
+  for (let index = 0; index < data.length; index++) {
+    data[index].id = index;
+  }
   return (
     <div className={styles.container}>
       <Head>
@@ -25,6 +28,45 @@ export default function bankView({ data }) {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Display Bank Stats</h1>
+        <MyTable
+          columns={[
+            { field: "bank_identifier", headerName: "Bank ID", width: 150 },
+            {
+              field: "name_of_corporation",
+              headerName: "Corporation Name",
+              width: 150,
+            },
+            { field: "name_of_bank", headerName: "Bank Name", width: 300 },
+            {
+              field: "street",
+              headerName: "Street",
+              width: 200,
+            },
+            { field: "city", headerName: "City", width: 100 },
+            { field: "state", headerName: "State", width: 50 },
+            { field: "zip", headerName: "Zip", width: 75 },
+            {
+              field: "num_accounts",
+              headerName: "Number of Accounts",
+              type: "number",
+              width: 150,
+            },
+            {
+              field: "bank_assets",
+              headerName: "Bank Assets ($)",
+              type: "number",
+              width: 150,
+            },
+            {
+              field: "total_assets",
+              headerName: "Total Assets ($)",
+              type: "number",
+              width: 150,
+            },
+          ]}
+          data={data}
+        />
+
         <Link href="/admin/statsMenu">
           <Button
             variant="contained"
@@ -35,21 +77,6 @@ export default function bankView({ data }) {
             Back
           </Button>
         </Link>
-        <MyTable
-          columns={[
-            "Bank ID",
-            "Corporation Name",
-            "Bank Name",
-            "Street",
-            "City",
-            "State",
-            "Zip",
-            "Number of Accounts",
-            "Bank Assets ($)",
-            "Total Assets ($)",
-          ]}
-          data={data}
-        />
       </main>
     </div>
   );

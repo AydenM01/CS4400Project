@@ -16,6 +16,10 @@ export async function getServerSideProps() {
 }
 
 export default function accountView({ data }) {
+  for (let index = 0; index < data.length; index++) {
+    data[index].id = index;
+  }
+
   return (
     <div className={styles.container}>
       <Head>
@@ -26,6 +30,30 @@ export default function accountView({ data }) {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Display Account Stats</h1>
+        <MyTable
+          columns={[
+            { field: "name_of_bank", headerName: "Bank", width: 300 },
+            {
+              field: "account_identifier",
+              headerName: "Account ID",
+              width: 300,
+            },
+            {
+              field: "account_assets",
+              headerName: "Account Balance ($)",
+              type: "number",
+              width: 300,
+            },
+            {
+              field: "number_of_owners",
+              headerName: "Number of Owners",
+              type: "number",
+              width: 300,
+            },
+          ]}
+          data={data}
+        />
+
         <Link href="/admin/statsMenu">
           <Button
             variant="contained"
@@ -36,15 +64,6 @@ export default function accountView({ data }) {
             Back
           </Button>
         </Link>
-        <MyTable
-          columns={[
-            "Bank",
-            "Account ID",
-            "Account Balance ($)",
-            "Number of Owners",
-          ]}
-          data={data}
-        />
       </main>
     </div>
   );

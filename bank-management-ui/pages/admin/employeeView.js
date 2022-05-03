@@ -16,6 +16,9 @@ export async function getServerSideProps() {
 }
 
 export default function employeeView({ data }) {
+  for (let index = 0; index < data.length; index++) {
+    data[index].id = index;
+  }
   return (
     <div className={styles.container}>
       <Head>
@@ -27,6 +30,61 @@ export default function employeeView({ data }) {
       <main className={styles.main}>
         <h1 className={styles.title}>Display Employee Stats</h1>
 
+        <MyTable
+          columns={[
+            {
+              field: "person_idenfifier",
+              headerName: "Per ID",
+              width: 150,
+            },
+            { field: "tax_identifier", headerName: "Tax ID", width: 150 },
+            { field: "employee_name", headerName: "Name", width: 300 },
+            {
+              field: "date_of_birth",
+              headerName: "DOB",
+              width: 150,
+            },
+            {
+              field: "joined_system",
+              headerName: "Joined Date",
+              width: 150,
+            },
+            {
+              field: "street",
+              headerName: "Street",
+              width: 200,
+            },
+            {
+              field: "city",
+              headerName: "City",
+              width: 100,
+            },
+            {
+              field: "state",
+              headerName: "State",
+              width: 100,
+            },
+            {
+              field: "zip",
+              headerName: "Zip",
+              width: 100,
+            },
+            {
+              field: "number_of_banks",
+              headerName: "Number of Banks",
+              type: "number",
+              width: 150,
+            },
+            {
+              field: "bank_assets",
+              headerName: "Bank Assets",
+              type: "number",
+              width: 200,
+            },
+          ]}
+          data={data}
+        />
+
         <Link href="/admin/statsMenu">
           <Button
             variant="contained"
@@ -37,23 +95,6 @@ export default function employeeView({ data }) {
             Back
           </Button>
         </Link>
-
-        <MyTable
-          columns={[
-            "Per ID",
-            "Tax ID",
-            "Name",
-            "DOB",
-            "Date Joined",
-            "Street",
-            "City",
-            "State",
-            "Zip",
-            "Number of Banks",
-            "Bank Assets",
-          ]}
-          data={data}
-        />
       </main>
     </div>
   );

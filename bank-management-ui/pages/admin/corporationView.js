@@ -16,6 +16,9 @@ export async function getServerSideProps() {
 }
 
 export default function corporationView({ data }) {
+  for (let index = 0; index < data.length; index++) {
+    data[index].id = index;
+  }
   return (
     <div className={styles.container}>
       <Head>
@@ -26,6 +29,37 @@ export default function corporationView({ data }) {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Display Corporation Stats</h1>
+        <MyTable
+          columns={[
+            {
+              field: "corporation_identifier",
+              headerName: "Corporation ID",
+              width: 100,
+            },
+            { field: "short_name", headerName: "Short Name", width: 200 },
+            { field: "formal_name", headerName: "Formal Name", width: 300 },
+            {
+              field: "number_of_banks",
+              headerName: "# Banks",
+              type: "number",
+              width: 150,
+            },
+            {
+              field: "corporation_assets",
+              headerName: "Corporation Assets ($)",
+              type: "number",
+              width: 200,
+            },
+            {
+              field: "total_assets",
+              headerName: "Total Assets ($)",
+              type: "number",
+              width: 200,
+            },
+          ]}
+          data={data}
+        />
+
         <Link href="/admin/statsMenu">
           <Button
             variant="contained"
@@ -36,17 +70,6 @@ export default function corporationView({ data }) {
             Back
           </Button>
         </Link>
-        <MyTable
-          columns={[
-            "Corporation ID",
-            "Short Name",
-            "Formal Name",
-            "# Banks",
-            "Corporation Assets ($)",
-            "Total Assets ($)",
-          ]}
-          data={data}
-        />
       </main>
     </div>
   );
