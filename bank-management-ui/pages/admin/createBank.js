@@ -85,6 +85,7 @@ export default function createBank(props) {
       }),
     });
     const response = await rawResponse.json();
+    console.log(rawResponse);
     if (rawResponse.status !== 200) {
       alert(response.sqlMessage);
     } else if (rawResponse.status === 200) {
