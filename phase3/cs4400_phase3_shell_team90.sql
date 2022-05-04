@@ -283,7 +283,9 @@ sp_main: begin
 		then begin
 			-- if the requester is not an admin, break
 			if not exists (select * from system_admin where
-            perID = ip_requester) then leave sp_main;
+            perID = ip_requester) then
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Not Admin';
+            leave sp_main;
             end if;
             -- if the customer being added does not exist, break
             if not exists (select * from customer where

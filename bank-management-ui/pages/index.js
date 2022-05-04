@@ -73,11 +73,6 @@ const Login = () => {
             >
               Login
             </Button>
-
-            <h4>Don't have an account? </h4>
-            <Link href={"/register"}>
-              <a style={{ color: "blue" }}>Register Here!</a>
-            </Link>
           </>
         )}
 
