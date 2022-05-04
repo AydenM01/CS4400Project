@@ -32,26 +32,23 @@ export default function hireWorker(props) {
   const { userData, setUserData } = useContext(AppContext);
   const [employee, setEmployee] = useState(props.employeeInit);
   const [bank, setBank] = useState(props.bankInit);
-  const [banks, setBanks] = useState([])
+  const [banks, setBanks] = useState([]);
   const [salary, setSalary] = useState(0);
 
   useEffect(() => {
     fetchData();
-  })
+  }, []);
   const fetchData = async () => {
-    const bankIDs = await fetch(
-      url + `/api/manager/getManagedBanks`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          manager: userData.userID,
-        }),
-      }
-    );
+    const bankIDs = await fetch(url + `/api/manager/getManagedBanks`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        manager: userData.userID,
+      }),
+    });
     const bankIDsJSON = await bankIDs.json();
     setBanks(bankIDsJSON);
   };
@@ -92,23 +89,25 @@ export default function hireWorker(props) {
 
         <Grid item xs={2} />
         <Grid item xs={8}>
-          {banks && <FormControl fullWidth>
-            <InputLabel>Bank</InputLabel>
-            <Select
-              label="Bank"
-              value={bank}
-              onChange={(e) => setBank(e.target.value)}
-            >
-              {banks.map((obj, i) => {
-                let bankID = obj["bankID"];
-                return (
-                  <MenuItem key={i} value={bankID}>
-                    {bankID}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>}
+          {banks && (
+            <FormControl fullWidth>
+              <InputLabel>Bank</InputLabel>
+              <Select
+                label="Bank"
+                value={bank}
+                onChange={(e) => setBank(e.target.value)}
+              >
+                {banks.map((obj, i) => {
+                  let bankID = obj["bankID"];
+                  return (
+                    <MenuItem key={i} value={bankID}>
+                      {bankID}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          )}
         </Grid>
 
         <Grid item xs={2} />
