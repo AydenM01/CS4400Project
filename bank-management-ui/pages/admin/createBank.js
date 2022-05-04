@@ -61,8 +61,8 @@ export default function createBank(props) {
       alert("Res Assets Cannot be Negative");
       return;
     }
-    if (zip.length > 5) {
-      alert("Zip Code Cannot be more than 5 digits");
+    if (zip.length !== 5) {
+      alert("Zip Code needs 5 digits");
       return;
     }
     const rawResponse = await fetch(url + "/api/createBank", {

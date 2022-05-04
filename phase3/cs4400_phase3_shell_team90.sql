@@ -428,19 +428,24 @@ sp_main: begin
     bankID = ip_savings_bankID and accountID = ip_savings_accountID)) and
     not exists (select * from system_admin where perID = ip_requester))
     then
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Accounts do not exist';
     leave sp_main;
     end if;
     
     -- if the requester doesn't have access to both the accounts, break
-    if ((not exists (select * from access where
-    perID = ip_requester and bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
-    not exists (select * from access where
-    perID = ip_requester and bankID = ip_savings_bankID and accountID = ip_savings_accountID) or
-    not exists (select * from system_admin where perID = ip_requester)) and 
-    not exists (select * from system_admin where perID = ip_requester)) then
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
-    leave sp_main;
+    if (ip_requester in (select perID from customer))
+    then begin
+		if ((not exists (select * from access where
+		perID = ip_requester and bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
+		not exists (select * from access where
+		perID = ip_requester and bankID = ip_savings_bankID and accountID = ip_savings_accountID))) then
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Requester Does not have access to both accounts';
+		leave sp_main;
+        end if;
+        end;
+		elseif (ip_requester not in (select perID from system_admin)) then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Requester Does not have access to both accounts';
+		leave sp_main;
     end if;
     
     -- maybe not necessary, could be handled below by update
@@ -448,14 +453,14 @@ sp_main: begin
     if (exists (select * from checking where 
     not (protectionBank = null) and not (protectionAccount = null) and
     bankID = ip_checking_bankID and accountID = ip_checking_accountID)) then
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Checking Account Already Has Overdraft Savings Account';
     leave sp_main;
     end if;
     
     -- if the savings account is already protecting another checking, break
     if (exists (select * from checking where 
     protectionBank = ip_savings_bankID and protectionAccount = ip_savings_accountID)) then
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Savings Account Already Protecting Another Account';
     leave sp_main;
     end if;
     

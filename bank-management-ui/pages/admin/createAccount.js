@@ -57,15 +57,15 @@ export default function createAccount(props) {
     }
 
     if (
-      interestRate <= 0 &&
+      interestRate < 0 &&
       (accountType === "savings" || accountType === "market")
     ) {
-      alert("Interest Bearing Account must have nonzero positive interest");
+      alert("Interest Bearing Account must have non-negative interest");
       return;
     }
 
-    if (maxWithdrawals <= 0 && accountType === "market") {
-      alert("maxWithdrawals must be positive nonzero in Market Account");
+    if (maxWithdrawals < 0 && accountType === "market") {
+      alert("maxWithdrawals cannot be negative for Market Account");
       return;
     }
 
