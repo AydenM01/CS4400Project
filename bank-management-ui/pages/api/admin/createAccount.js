@@ -13,7 +13,7 @@ export default function handler(req, res) {
   }
 
   connection.query(
-    "call create_bank(" +
+    "call create_Account(" +
       bankID +
       "," +
       accountID +

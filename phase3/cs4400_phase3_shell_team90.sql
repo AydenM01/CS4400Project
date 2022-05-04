@@ -244,7 +244,10 @@ sp_main: begin
 	if (ip_perID not in (select perID from employee)
 		or ip_perID in (select manager from bank)
         or ip_perID in (select distinct perID from workFor)
-	) then leave sp_main;
+        or ip_salary < 0
+	) then 
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Replace Manager';
+    leave sp_main;
     end if;
         
 	update employee set salary = ip_salary where perID = ip_perID;

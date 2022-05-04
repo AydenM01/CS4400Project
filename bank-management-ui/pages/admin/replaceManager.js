@@ -20,11 +20,15 @@ export async function getServerSideProps() {
   const bankIDs = await fetch(url + `/api/getBankIDs`);
   const bankIDsJSON = await bankIDs.json();
 
-  const employeeIDs = await fetch(url + `/api/getEmployeeIDs`);
+  const employeeIDs = await fetch(url + `/api/getPossibleManagerIDs`);
   const employeeIDsJSON = await employeeIDs.json();
 
   let bankInit = bankIDsJSON[0]["bankID"];
-  let employeeInit = employeeIDsJSON[0]["perID"];
+
+  let employeeInit = "";
+  if (employeeIDsJSON.length > 0) {
+    employeeInit = employeeIDsJSON[0]["perID"];
+  }
 
   // Pass data to the page via props
   return {
@@ -36,6 +40,32 @@ export default function replaceManager(props) {
   const [employee, setEmployee] = useState(props.employeeInit);
   const [bank, setBank] = useState(props.bankInit);
   const [newSalary, setNewSalary] = useState(0);
+
+  const handleCreate = async () => {
+    if (newSalary < 0) {
+      alert("Salary Cannot be Negative");
+      return;
+    }
+    const rawResponse = await fetch(url + "/api/admin/replaceManager", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        employee: employee,
+        bank: bank,
+        newSalary: newSalary,
+      }),
+    });
+    const response = await rawResponse.json();
+    console.log(rawResponse);
+    if (rawResponse.status !== 200) {
+      alert(response.sqlMessage);
+    } else if (rawResponse.status === 200) {
+      alert("Success");
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -120,7 +150,7 @@ export default function replaceManager(props) {
           </Link>
         </Grid>
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
+          <Button variant="contained" fullWidth onClick={handleCreate}>
             Confirm
           </Button>
         </Grid>
