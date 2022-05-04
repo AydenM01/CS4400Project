@@ -22,7 +22,7 @@ const ManagerMenu = () => {
         <h2 className={styles.title}>Manager Menu</h2>
 
         <div className={styles.grid}>
-          <Link href={"/payEmployees"}>
+          <Link href={"/manager/payEmployees"}>
             <a className={styles.card}>
               <h2>Pay Employee &rarr;</h2>
             </a>
