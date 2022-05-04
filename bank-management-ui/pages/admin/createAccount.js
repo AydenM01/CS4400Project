@@ -17,10 +17,10 @@ import {
 } from "@mui/material";
 
 export async function getServerSideProps() {
-  const personIDs = await fetch(url + `/api/getPeople`);
+  const personIDs = await fetch(url + `/api/getBankIDs`);
   const personIDsJSON = await personIDs.json();
 
-  let personInit = personIDsJSON[0]["perID"];
+  let personInit = personIDsJSON[0]["bankID"];
 
   // Pass data to the page via props
   return {
@@ -30,9 +30,36 @@ export async function getServerSideProps() {
 
 export default function createAccount(props) {
   const [person, setPerson] = useState(props.personInit);
-  const [salary, setSalary] = useState(0);
-  const [numPayments, setNumPayments] = useState(0);
-  const [accumEarnings, setAccumEarnings] = useState(0);
+  const [initialBalance, setInitialBalance] = useState(0);
+  const [interestRate, setInterestRate] = useState(0);
+  const [minBalance, setMinBalance] = useState(0);
+  const [maxWithdrawals, setMaxWithdrawals] = useState(0);
+
+  const handleCreate = async () => {
+    if (initialBalance < 0) {
+      alert("Balance Cannot be Negative");
+      return;
+    }
+    const rawResponse = await fetch(url + "/api/createAccount", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        bankID: bankID,
+        accountID: accountID,
+        balance: initialBalance,
+      }),
+    });
+    const response = await rawResponse.json();
+    console.log(rawResponse);
+    if (rawResponse.status !== 200) {
+      alert(response.sqlMessage);
+    } else if (rawResponse.status === 200) {
+      alert("Success");
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -53,7 +80,7 @@ export default function createAccount(props) {
             <InputLabel>Person</InputLabel>
             <Select
               label="Person"
-              value={person}
+              value={"" + person}
               onChange={(e) => setPerson(e.target.value)}
             >
               {props.personIDsJSON.map((obj, i) => {
@@ -69,11 +96,11 @@ export default function createAccount(props) {
         </Grid>
         <Grid item xs={4}>
           <TextField
-            label="Salary"
+            label="Initial Balance"
             type="number"
             fullWidth
-            value={salary}
-            onChange={(e) => setSalary(e.target.value)}
+            value={initialBalance}
+            onChange={(e) => setInitialBalance(e.target.value)}
           />
         </Grid>
         <Grid item xs={2} />
@@ -81,24 +108,38 @@ export default function createAccount(props) {
         <Grid item xs={2} />
         <Grid item xs={4}>
           <TextField
-            label="# of Payments"
+            label="Interest Rate"
             type="number"
             fullWidth
-            value={numPayments}
-            onChange={(e) => setNumPayments(e.target.value)}
+            value={interestRate}
+            onChange={(e) => setInterestRate(e.target.value)}
           />
         </Grid>
         <Grid item xs={4}>
           <TextField
-            label="Accumulated Earnings"
+            label="Min Balance"
             type="number"
             fullWidth
-            value={accumEarnings}
-            onChange={(e) => setAccumEarnings(e.target.value)}
+            value={minBalance}
+            onChange={(e) => setMinBalance(e.target.value)}
           />
         </Grid>
-
         <Grid item xs={2} />
+
+
+        <Grid item xs={4} />
+        <Grid item xs={4}>
+          <TextField
+            label="Max Withdrawals"
+            type="number"
+            fullWidth
+            value={maxWithdrawals}
+            onChange={(e) => setMaxWithdrawals(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={4} />
+
+
 
         <Grid item xs={2} />
 
@@ -115,7 +156,7 @@ export default function createAccount(props) {
           </Link>
         </Grid>
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
+          <Button variant="contained" fullWidth onClick={handleCreate}>
             Create
           </Button>
         </Grid>

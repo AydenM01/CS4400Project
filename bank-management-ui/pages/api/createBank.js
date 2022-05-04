@@ -25,19 +25,6 @@ export default function handler(req, res) {
     req.body.name ? (name = '"' + req.body.name + '"') : (name = null);
   }
 
-  /*
-  if (req.method === "POST") {
-    req.body.corpID ? (corpID = '"' + req.body.corpID + '"') : (corpID = null);
-    req.body.longName
-      ? (longName = '"' + req.body.longName + '"')
-      : (longName = null);
-    req.body.shortName
-      ? (shortName = '"' + req.body.shortName + '"')
-      : (shortName = null);
-    resAssets = req.body.resAssets;
-  }
-  */
-
   connection.query(
     "call create_bank(" +
       bankID +
@@ -66,16 +53,4 @@ export default function handler(req, res) {
     }
   );
 
-  /*
-  connection.query(
-    "call create_corporation(" +
-      corpID +
-      "," +
-      shortName +
-      "," +
-      longName +
-      "," +
-      resAssets +
-      ");",
-      */
 }
