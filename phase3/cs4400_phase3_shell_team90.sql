@@ -91,13 +91,8 @@ sp_main: begin
 		end;
 	end if;
     
-    -- if person is customer, create Employee
-    if (ip_perID in (select perID from customer))
-		then begin
-			insert into employee (perID, salary, payments, earned)
-            values (ip_perID, ip_salary, ip_payments, ip_earned);
-        end;
-	end if;
+	insert into employee (perID, salary, payments, earned)
+	values (ip_perID, ip_salary, ip_payments, ip_earned);
 end //
 delimiter ;
 
@@ -133,14 +128,9 @@ sp_main: begin
             values (ip_perID);
 		end;
 	end if;
-    
-    -- if person is employee, create customer
-    if (ip_perID in (select perID from employee))
-		then begin
-			insert into customer (perID)
-            values (ip_perID);
-        end;
-	end if;
+
+	insert into customer (perID)
+	values (ip_perID);
 end //
 delimiter ;
 

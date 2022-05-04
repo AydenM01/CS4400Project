@@ -1,5 +1,5 @@
 import Head from "next/head";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Image from "next/image";
 import styles from "../../styles/Home.module.css";
 import { url } from "../../lib/env";
@@ -18,17 +18,13 @@ import {
 import Link from "next/link";
 
 export async function getServerSideProps() {
-  const bankIDs = await fetch(url + `/api/getBankIDs`);
-  const bankIDsJSON = await bankIDs.json();
   const employeeIDs = await fetch(url + `/api/getHireableEmployees`);
   const employeeIDsJSON = await employeeIDs.json();
-
-  let bankInit = bankIDsJSON[0]["bankID"];
   let employeeInit = employeeIDsJSON[0]["perID"];
 
   // Pass data to the page via props
   return {
-    props: { bankIDsJSON, bankInit, employeeIDsJSON, employeeInit },
+    props: { employeeIDsJSON, employeeInit },
   };
 }
 
@@ -36,7 +32,29 @@ export default function hireWorker(props) {
   const { userData, setUserData } = useContext(AppContext);
   const [employee, setEmployee] = useState(props.employeeInit);
   const [bank, setBank] = useState(props.bankInit);
+  const [banks, setBanks] = useState([])
   const [salary, setSalary] = useState(0);
+
+  useEffect(() => {
+    fetchData();
+  })
+  const fetchData = async () => {
+    const bankIDs = await fetch(
+      url + `/api/manager/getManagedBanks`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          manager: userData.userID,
+        }),
+      }
+    );
+    const bankIDsJSON = await bankIDs.json();
+    setBanks(bankIDsJSON);
+  };
 
   const handleHire = async (perID, bankID, salary) => {
     const rawResponse = await fetch(url + "/api/hireWorker", {
@@ -74,14 +92,14 @@ export default function hireWorker(props) {
 
         <Grid item xs={2} />
         <Grid item xs={8}>
-          <FormControl fullWidth>
+          {banks && <FormControl fullWidth>
             <InputLabel>Bank</InputLabel>
             <Select
               label="Bank"
               value={bank}
               onChange={(e) => setBank(e.target.value)}
             >
-              {props.bankIDsJSON.map((obj, i) => {
+              {banks.map((obj, i) => {
                 let bankID = obj["bankID"];
                 return (
                   <MenuItem key={i} value={bankID}>
@@ -90,7 +108,7 @@ export default function hireWorker(props) {
                 );
               })}
             </Select>
-          </FormControl>{" "}
+          </FormControl>}
         </Grid>
 
         <Grid item xs={2} />
