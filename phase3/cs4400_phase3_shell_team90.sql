@@ -13,7 +13,14 @@ delimiter //
 create procedure create_corporation (in ip_corpID varchar(100),
     in ip_shortName varchar(100), in ip_longName varchar(100),
     in ip_resAssets integer)
-begin
+sp_main: begin
+
+	if (ip_resAssets < 0)
+    then begin
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Add Corporation Role';
+		leave sp_main;
+		end;
+    end if;
 	-- Implement your code here
     insert into corporation (corpID, shortName, longName, resAssets)
     values (ip_corpID, ip_shortName, ip_longName, ip_resAssets);
@@ -63,7 +70,8 @@ create procedure start_employee_role (in ip_perID varchar(100), in ip_taxID char
 sp_main: begin
 	-- if person is admin or employee, not valid
 	if (ip_perID in (select perID from employee)
-    or ip_perID in (select perID from system_admin))
+    or ip_perID in (select perID from system_admin)
+    or ip_salary < 0 or ip_payments < 0 or ip_earned < 0)
 		then
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Add Employee Role';
         leave sp_main;
@@ -83,13 +91,8 @@ sp_main: begin
 		end;
 	end if;
     
-    -- if person is customer, create Employee
-    if (ip_perID in (select perID from customer))
-		then begin
-			insert into employee (perID, salary, payments, earned)
-            values (ip_perID, ip_salary, ip_payments, ip_earned);
-        end;
-	end if;
+	insert into employee (perID, salary, payments, earned)
+	values (ip_perID, ip_salary, ip_payments, ip_earned);
 end //
 delimiter ;
 
@@ -125,14 +128,9 @@ sp_main: begin
             values (ip_perID);
 		end;
 	end if;
-    
-    -- if person is employee, create customer
-    if (ip_perID in (select perID from employee))
-		then begin
-			insert into customer (perID)
-            values (ip_perID);
-        end;
-	end if;
+
+	insert into customer (perID)
+	values (ip_perID);
 end //
 delimiter ;
 
@@ -246,7 +244,10 @@ sp_main: begin
 	if (ip_perID not in (select perID from employee)
 		or ip_perID in (select manager from bank)
         or ip_perID in (select distinct perID from workFor)
-	) then leave sp_main;
+        or ip_salary < 0
+	) then 
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Replace Manager';
+    leave sp_main;
     end if;
         
 	update employee set salary = ip_salary where perID = ip_perID;
@@ -282,7 +283,9 @@ sp_main: begin
 		then begin
 			-- if the requester is not an admin, break
 			if not exists (select * from system_admin where
-            perID = ip_requester) then leave sp_main;
+            perID = ip_requester) then
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Not Admin';
+            leave sp_main;
             end if;
             -- if the customer being added does not exist, break
             if not exists (select * from customer where
@@ -332,10 +335,6 @@ sp_main: begin
 	end if;
     
 	insert into access values (ip_customer, ip_bankID, ip_accountID, ip_dtShareStart, null);
-    
-    
-    
-            
 end //
 delimiter ;
 
@@ -403,7 +402,7 @@ sp_main: begin
     -- if the bank or account does not exist, break
     if not exists (select * from interest_bearing where 
     bankID = ip_bankID and accountID = ip_accountID) then
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Relationship not valid';
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Not Interest Bearing';
     leave sp_main;
     end if;
     
@@ -423,22 +422,30 @@ sp_main: begin
 	-- Implement your code here NOTE: changed begin to sp_main: begin
 
 	-- if the accounts for checking bank and savings bank don't exist, break
-    if (not exists (select * from bank_account where 
+    if ((not exists (select * from bank_account where 
     bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
     not exists (select * from bank_account where 
-    bankID = ip_savings_bankID and accountID = ip_savings_accountID))
+    bankID = ip_savings_bankID and accountID = ip_savings_accountID)) and
+    not exists (select * from system_admin where perID = ip_requester))
     then
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Accounts do not exist';
     leave sp_main;
     end if;
     
     -- if the requester doesn't have access to both the accounts, break
-    if (not exists (select * from access where
-    perID = ip_requester and bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
-    not exists (select * from access where
-    perID = ip_requester and bankID = ip_savings_bankID and accountID = ip_savings_accountID)) then
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
-    leave sp_main;
+    if (ip_requester in (select perID from customer))
+    then begin
+		if ((not exists (select * from access where
+		perID = ip_requester and bankID = ip_checking_bankID and accountID = ip_checking_accountID) or
+		not exists (select * from access where
+		perID = ip_requester and bankID = ip_savings_bankID and accountID = ip_savings_accountID))) then
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Requester Does not have access to both accounts';
+		leave sp_main;
+        end if;
+        end;
+		elseif (ip_requester not in (select perID from system_admin)) then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Requester Does not have access to both accounts';
+		leave sp_main;
     end if;
     
     -- maybe not necessary, could be handled below by update
@@ -446,14 +453,14 @@ sp_main: begin
     if (exists (select * from checking where 
     not (protectionBank = null) and not (protectionAccount = null) and
     bankID = ip_checking_bankID and accountID = ip_checking_accountID)) then
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Checking Account Already Has Overdraft Savings Account';
     leave sp_main;
     end if;
     
     -- if the savings account is already protecting another checking, break
     if (exists (select * from checking where 
     protectionBank = ip_savings_bankID and protectionAccount = ip_savings_accountID)) then
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Start Overdraft';
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Savings Account Already Protecting Another Account';
     leave sp_main;
     end if;
     
@@ -472,10 +479,11 @@ create procedure stop_overdraft (in ip_requester varchar(100),
 	in ip_checking_bankID varchar(100), in ip_checking_accountID varchar(100))
 sp_main: begin
     -- if the account doesn't exist or doesnt have access to checking or savings, break
-    if ((ip_checking_bankID, ip_checking_accountID) not in (select bankID, accountID from bank_account)
+    if (((ip_checking_bankID, ip_checking_accountID) not in (select bankID, accountID from bank_account)
 		or ip_requester not in (select perID from access natural join checking where bankID = ip_checking_bankID and accountID = ip_checking_accountID)
         or ip_requester not in (select perID from access a natural join (select perID, protectionBank, protectionAccount from access natural join checking where bankID = ip_checking_bankID and accountID = ip_checking_accountID) as b
-		where a.perID = b.perID and a.accountID = b.protectionAccount and a.bankID = b.protectionBank)
+		where a.perID = b.perID and a.accountID = b.protectionAccount and a.bankID = b.protectionBank))
+        and not exists (select * from system_admin where perID = ip_requester)
 	) then 
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot Stop Overdraft';
     leave

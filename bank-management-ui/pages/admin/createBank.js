@@ -57,6 +57,14 @@ export default function createBank(props) {
   const [manager, setManager] = useState(props.managerInit);
 
   const handleCreate = async () => {
+    if (resAssets < 0) {
+      alert("Res Assets Cannot be Negative");
+      return;
+    }
+    if (zip.length !== 5) {
+      alert("Zip Code needs 5 digits");
+      return;
+    }
     const rawResponse = await fetch(url + "/api/createBank", {
       method: "POST",
       headers: {
@@ -77,7 +85,12 @@ export default function createBank(props) {
       }),
     });
     const response = await rawResponse.json();
-    console.log(response);
+    console.log(rawResponse);
+    if (rawResponse.status !== 200) {
+      alert(response.sqlMessage);
+    } else if (rawResponse.status === 200) {
+      alert("Success");
+    }
   };
 
   return (

@@ -13,7 +13,7 @@ export default function handler(req, res) {
   connection.query(
     "select perID," +
       "CASE WHEN perID in (select perID from system_admin) THEN 'a' " +
-      "WHEN perID in (select e.perID from employee as e, customer as c where e.perID = c.perID) THEN 'e&c' " +
+      "WHEN perID in (select e.manager from bank as e, customer as c where e.manager = c.perID) THEN 'e&c' " +
       "WHEN perID in (select perID from customer) THEN 'c' " +
       "WHEN perID in (select manager from bank) THEN 'e' " +
       "ELSE 'n'" +

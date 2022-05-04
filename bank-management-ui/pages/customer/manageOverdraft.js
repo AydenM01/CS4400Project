@@ -127,6 +127,9 @@ export default function deposit(props) {
   };
 
   const handleOverdraft = async () => {
+    if (!userData) {
+      alert("not signed in");
+    }
     if (checked) {
       addOverdraft();
     } else {

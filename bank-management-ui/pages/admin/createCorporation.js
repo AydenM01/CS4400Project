@@ -13,6 +13,13 @@ export default function createCorporation() {
   const [resAssets, setResAssets] = useState(0);
 
   const handleCreate = async () => {
+
+    if (resAssets < 0) {
+      console.log("negative")
+      alert("Res Assets Cannot be Less than 0")
+      return;
+    }
+
     const rawResponse = await fetch(url + "/api/createCorporation", {
       method: "POST",
       headers: {

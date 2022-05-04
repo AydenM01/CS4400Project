@@ -18,12 +18,11 @@ import {
   MenuItem,
 } from "@mui/material";
 
-export default function deposit(props) {
+export default function addOwner(props) {
   const [person, setPerson] = useState("");
   const [accounts, setAccounts] = useState([]);
   const [customers, setCustomers] = useState([]);
-  const [fromAccount, setFromAccount] = useState("");
-  const [toAccount, setToAccount] = useState("");
+  const [account, setAccount] = useState("");
   const [customer, setCustomer] = useState("");
   const [salary, setSalary] = useState(0);
   const [numPayments, setNumPayments] = useState(0);
@@ -36,7 +35,7 @@ export default function deposit(props) {
 
   const fetchData = async () => {
     const accountIDs = await fetch(
-      url + `/api/customer/getAccessibleAccounts`,
+      url + `/api/admin/getAccounts`,
       {
         method: "POST",
         headers: {
@@ -44,28 +43,20 @@ export default function deposit(props) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          customer: userData.userID,
         }),
       }
     );
     const accountIDsJSON = await accountIDs.json();
     setAccounts(accountIDsJSON);
+
+    const customerIDs = await fetch(url + "/api/getCustomerIDs");
+    const customerIDsJSON = await customerIDs.json();
+    setCustomers(customerIDsJSON);
   };
 
-  const handleDeposit = async () => {
-    if (salary <= 0) {
-      alert("Cannot Transfer Negative or 0");
-      return;
-    }
-
-    if (toAccount === fromAccount) {
-      alert("Cannot Transfer to Same Account");
-      return;
-    }
-
-    let account_parsed = fromAccount.split(" / ");
-    let toAccount_parsed = toAccount.split(" / ");
-    const rawResponse = await fetch(url + "/api/customer/transfer", {
+  const handleAdd = async () => {
+    let account_parsed = account.split(" / ");
+    const rawResponse = await fetch(url + "/api/customer/addOwner", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -73,11 +64,9 @@ export default function deposit(props) {
       },
       body: JSON.stringify({
         requester: userData.userID,
-        amount: salary,
+        sharer: customer,
         bankID: account_parsed[1],
         accountID: account_parsed[0],
-        toBankID: toAccount_parsed[1],
-        toAccountID: toAccount_parsed[0],
       }),
     });
 
@@ -90,7 +79,7 @@ export default function deposit(props) {
     }
   };
 
-  return userData.userRole.includes("c") ? (
+  return userData.userRole.includes("a") ? (
     <div className={styles.container}>
       <Head>
         <title>Bank Management UI</title>
@@ -100,18 +89,18 @@ export default function deposit(props) {
 
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <h1 className={styles.title}>Transfer</h1>
+          <h1 className={styles.title}>Add Owner</h1>
         </Grid>
 
         <Grid item xs={2} />
         <Grid item xs={8}>
           {accounts && (
             <FormControl fullWidth>
-              <InputLabel>From Account</InputLabel>
+              <InputLabel>Account</InputLabel>
               <Select
                 label="Account"
-                value={fromAccount}
-                onChange={(e) => setFromAccount(e.target.value)}
+                value={account}
+                onChange={(e) => setAccount(e.target.value)}
               >
                 {accounts.map((obj, i) => {
                   let acctID = obj["accountID"];
@@ -127,35 +116,21 @@ export default function deposit(props) {
           )}
         </Grid>
         <Grid item xs={2} />
-
         <Grid item xs={2} />
         <Grid item xs={8}>
-          <TextField
-            label="Amount"
-            type="number"
-            fullWidth
-            value={salary}
-            onChange={(e) => setSalary(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={2} />
-
-        <Grid item xs={2} />
-        <Grid item xs={8}>
-          {accounts && (
+          {customers && (
             <FormControl fullWidth>
-              <InputLabel>To Account</InputLabel>
+              <InputLabel>Customer</InputLabel>
               <Select
-                label="Account"
-                value={toAccount}
-                onChange={(e) => setToAccount(e.target.value)}
+                label="Customer"
+                value={customer}
+                onChange={(e) => setCustomer(e.target.value)}
               >
-                {accounts.map((obj, i) => {
-                  let acctID = obj["accountID"];
-                  let bankID = obj["bankID"];
+                {customers.map((obj, i) => {
+                  let perID = obj["perID"];
                   return (
-                    <MenuItem key={i} value={acctID + " / " + bankID}>
-                      {acctID + " / " + bankID}
+                    <MenuItem key={i} value={perID}>
+                      {perID}
                     </MenuItem>
                   );
                 })}
@@ -163,12 +138,13 @@ export default function deposit(props) {
             </FormControl>
           )}
         </Grid>
+
         <Grid item xs={2} />
 
         <Grid item xs={2} />
 
         <Grid item xs={4}>
-          <Link href="/customer/customerMenu">
+          <Link href="/admin/manageAccountsAdmin">
             <Button fullWidth variant="contained" color="error">
               Cancel
             </Button>
@@ -176,7 +152,7 @@ export default function deposit(props) {
         </Grid>
 
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth onClick={handleDeposit}>
+          <Button variant="contained" fullWidth onClick={handleAdd}>
             Create
           </Button>
         </Grid>

@@ -13,7 +13,11 @@ delimiter //
 create procedure create_corporation (in ip_corpID varchar(100),
     in ip_shortName varchar(100), in ip_longName varchar(100),
     in ip_resAssets integer)
-begin
+sp_main: begin
+	if (ip_resAssets < 0)
+    then leave sp_main;
+    end if;
+    
 	-- Implement your code here
     insert into corporation (corpID, shortName, longName, resAssets)
     values (ip_corpID, ip_shortName, ip_longName, ip_resAssets);

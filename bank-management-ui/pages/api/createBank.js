@@ -13,43 +13,44 @@ export default function handler(req, res) {
   let manager = null;
 
   if (req.method === "POST") {
-    req.body.bankID ? (bankID = req.body.bankID) : (bankID = null);
-    req.body.street ? (street = req.body.street) : (street = null);
-    req.body.city ? (city = req.body.city) : (city = null);
-    req.body.state ? (state = req.body.state) : (state = null);
-    req.body.zip ? (zip = req.body.zip) : (zip = null);
+    req.body.bankID ? (bankID = '"' + req.body.bankID + '"') : (bankID = null);
+    req.body.street ? (street = '"' + req.body.street + '"') : (street = null);
+    req.body.city ? (city = '"' + req.body.city + '"') : (city = null);
+    req.body.state ? (state = '"' + req.body.state + '"') : (state = null);
+    req.body.zip ? (zip = '"' + req.body.zip + '"') : (zip = null);
     resAssets = req.body.resAssets;
-    req.body.corpID ? (corpID = req.body.corpID) : (corpID = null);
-    req.body.employee ? (employee = req.body.employee) : (employee = null);
-    req.body.manager ? (manager = req.body.manager) : (manager = null);
-    req.body.name ? (name = req.body.name) : (name = null);
+    req.body.corpID ? (corpID = '"' + req.body.corpID + '"') : (corpID = null);
+    req.body.employee ? (employee = '"' + req.body.employee + '"') : (employee = null);
+    req.body.manager ? (manager = '"' + req.body.manager + '"') : (manager = null);
+    req.body.name ? (name = '"' + req.body.name + '"') : (name = null);
   }
 
   connection.query(
-    'call create_bank("' +
+    "call create_bank(" +
       bankID +
-      '","' +
+      "," +
       name +
-      '","' +
+      "," +
       street +
-      '","' +
+      "," +
       city +
-      '","' +
+      "," +
       state +
-      '","' +
+      "," +
       zip +
-      '",' +
+      "," +
       resAssets +
-      ',"' +
+      "," +
       corpID +
-      '","' +
+      "," +
       manager +
-      '","' +
+      "," +
       employee +
-      '");',
+      ");",
     function (error, results, fields) {
-      if (error) throw error;
-      res.status(200).json(results);
+      if (error) res.status(400).json(error);
+      else res.status(200).json(results);
     }
   );
+
 }

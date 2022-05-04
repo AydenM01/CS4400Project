@@ -34,6 +34,29 @@ export default function createEmployee(props) {
   const [numPayments, setNumPayments] = useState(0);
   const [accumEarnings, setAccumEarnings] = useState(0);
 
+  const handleCreate = async () => {
+    const rawResponse = await fetch(url + "/api/startEmployee", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        person: person,
+        salary: salary,
+        numPayments: numPayments,
+        accumEarnings: accumEarnings
+      }),
+    });
+
+    const response = await rawResponse.json();
+    if (rawResponse.status === 400) {
+      alert(response.sqlMessage);
+    } else if (rawResponse.status === 200) {
+      alert("Success");
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -115,7 +138,7 @@ export default function createEmployee(props) {
           </Link>
         </Grid>
         <Grid item xs={4}>
-          <Button variant="contained" fullWidth>
+          <Button variant="contained" fullWidth onClick={handleCreate}>
             Create
           </Button>
         </Grid>
