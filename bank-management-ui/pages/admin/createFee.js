@@ -17,28 +17,25 @@ import {
 import Link from "next/link";
 
 export async function getServerSideProps() {
-  const bankIDs = await fetch(url + `/api/getBankIDs`);
-  const bankIDsJSON = await bankIDs.json();
-
-  let bankInit = bankIDsJSON[0]["bankID"];
-
-  const accountIDs = await fetch(url + `/api/getAccountIDs`);
-  const accountIDsJSON = await accountIDs.json();
-
-  let accountInit = accountIDsJSON[0]["accountID"];
+  const accounts = await fetch(url + `/api/admin/getAccounts`);
+  const accountsJSON = await accounts.json();
 
   // Pass data to the page via props
+  
   return {
-    props: { bankIDsJSON, bankInit, accountIDsJSON, accountInit },
+    props: { accountsJSON },
   };
 }
 
 export default function createFee(props) {
-  const [bank, setBank] = useState(props.bankInit);
-  const [account, setAccount] = useState(props.accountInit);
+  const [accounts, setAccounts] = useState(props.accountsJSON);
+  const [account, setAccount] = useState("");
   const [feeType, setFeeType] = useState("");
 
   const handleCreate = async () => {
+    let account_parsed = account.split(" / ");
+    console.log(account_parsed[1]);
+    console.log(account_parsed[0]);
     const rawResponse = await fetch(url + "/api/createFee", {
       method: "POST",
       headers: {
@@ -46,8 +43,8 @@ export default function createFee(props) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        bank: bank,
-        account: account,
+        bank: account_parsed[1],
+        account: account_parsed[0],
         feeType: feeType,
       }),
     });
@@ -76,40 +73,19 @@ export default function createFee(props) {
         <Grid item xs={2} />
         <Grid item xs={8}>
           <FormControl fullWidth>
-            <InputLabel>Bank</InputLabel>
-            <Select
-              label="Bank"
-              value={bank}
-              onChange={(e) => setBank(e.target.value)}
-            >
-              {props.bankIDsJSON.map((obj, i) => {
-                let bankID = obj["bankID"];
-                return (
-                  <MenuItem key={i} value={bankID}>
-                    {bankID}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>{" "}
-        </Grid>
-
-        <Grid item xs={2} />
-
-        <Grid item xs={2} />
-        <Grid item xs={8}>
-          <FormControl fullWidth>
             <InputLabel>Account</InputLabel>
             <Select
               label="Account"
               value={account}
               onChange={(e) => setAccount(e.target.value)}
             >
-              {props.accountIDsJSON.map((obj, i) => {
+              {accounts.map((obj, i) => {
                 let accountID = obj["accountID"];
+                let bankID = obj["bankID"]
+                let account_combined = accountID + ' / ' + bankID;
                 return (
-                  <MenuItem key={i} value={accountID}>
-                    {accountID}
+                  <MenuItem key={i} value={account_combined}>
+                    {account_combined}
                   </MenuItem>
                 );
               })}

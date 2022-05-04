@@ -397,7 +397,7 @@ sp_main: begin
     -- if the bank or account does not exist, break
     if not exists (select * from interest_bearing where 
     bankID = ip_bankID and accountID = ip_accountID) then
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Relationship not valid';
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Not Interest Bearing';
     leave sp_main;
     end if;
     
